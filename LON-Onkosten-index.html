@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onkosten — Londerzeel</title>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{--a:#1A4E8E;--al:#E8EFF8;--at:#0D3260;--ab:#C4D4EE;--a2:#6B3FA0;--al2:#F3EDFC;--a3:#B85000;--al3:#FEF3E8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F8F7F4;color:#1A1A18;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+/* LOADING / LOGIN */
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1.5rem;padding:2rem}
+.splash-logo{width:72px;height:72px;background:var(--a);border-radius:18px;display:flex;align-items:center;justify-content:center}
+.splash-logo i{font-size:38px;color:white}
+.splash h1{font-size:22px;font-weight:700;text-align:center}
+.splash p{font-size:14px;color:#888;text-align:center;max-width:340px}
+.spin{width:28px;height:28px;border:3px solid #E0DDD5;border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* APP SHELL */
+.app-shell{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--a);color:white;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:50}
+.topbar-l{display:flex;align-items:center;gap:10px}
+.topbar h1{font-size:15px;font-weight:700}
+.topbar p{font-size:11px;opacity:.8;margin-top:1px}
+.topbar-r{display:flex;align-items:center;gap:8px}
+.user-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;font-size:12px}
+.user-chip i{font-size:16px}
+.icon-btn{background:rgba(255,255,255,.15);border:none;color:white;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .15s}
+.icon-btn:hover{background:rgba(255,255,255,.25)}
+/* ROLE BADGE */
+.role-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.role-lk{background:#C8E6D0;color:var(--at)}
+.role-dir{background:#D4BEF5;color:#3D1F6B}
+.role-sec{background:#FDDCB5;color:#7A3200}
+/* NAV TABS */
+.navtabs{background:white;border-bottom:1px solid #E8E5DC;display:flex;overflow-x:auto;gap:0}
+.navtab{padding:12px 18px;font-size:13px;font-weight:500;color:#888;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:color .15s;border-top:none;border-left:none;border-right:none;background:none;font-family:inherit}
+.navtab:hover{color:#333}.navtab.active{color:var(--a);border-bottom-color:var(--a);font-weight:600}
+.navtab.active.dir{color:var(--a2);border-bottom-color:var(--a2)}
+.navtab.active.sec{color:var(--a3);border-bottom-color:var(--a3)}
+/* CONTENT */
+.content{flex:1;max-width:720px;margin:0 auto;width:100%;padding:1.25rem 1rem}
+.card{background:white;border:1px solid #E8E5DC;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.ct{font-size:14px;font-weight:600;color:#333;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.ct-l{display:flex;align-items:center;gap:8px}
+.ct i{color:var(--a);font-size:18px}
+.field{margin-bottom:.9rem}.field:last-child{margin-bottom:0}
+label{display:block;font-size:11px;font-weight:700;color:#777;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid #DDD;border-radius:8px;font-size:14px;background:white;color:#1A1A18;font-family:inherit;transition:border-color .15s}
+textarea{resize:vertical;min-height:80px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 3px rgba(26,78,142,.1)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{font-size:11px;color:#999;margin-top:4px}
+/* BUTTONS */
+.br{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap}
+.btn{padding:10px 18px;border:1px solid #DDD;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;background:white;color:#333;display:flex;align-items:center;gap:7px;font-weight:500;transition:all .1s}
+.btn:hover{background:#F5F5F0}.btn.p{background:var(--a);border-color:var(--a);color:white}.btn.p:hover{opacity:.88}
+.btn.pu{background:var(--a2);border-color:var(--a2);color:white}.btn.pu:hover{opacity:.88}
+.btn.or{background:var(--a3);border-color:var(--a3);color:white}.btn.or:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}.btn:active:not(:disabled){transform:scale(.98)}
+.btn.danger{border-color:#ECA5A5;color:#B91C1C;background:#FEF2F2}.btn.danger:hover{background:#FEE2E2}
+.smbtn{padding:7px 12px;border:1px solid #DDD;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;background:white;color:#333;display:flex;align-items:center;gap:5px;transition:all .1s}
+.smbtn:hover{background:#F5F5F0}.smbtn.p{background:var(--a);border-color:var(--a);color:white}
+/* MODULE PICKER */
+.mod-pick{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.mod-btn{flex:1;min-width:130px;padding:12px 10px;border:1.5px solid #E0DDD5;border-radius:12px;background:white;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
+.mod-btn i{font-size:22px;display:block;margin-bottom:5px;color:#999}
+.mod-btn span{font-size:12px;font-weight:600;color:#555;display:block}
+.mod-btn small{font-size:11px;color:#AAA}
+.mod-btn.active{border-color:var(--a);background:var(--al)}
+.mod-btn.active i,.mod-btn.active span{color:var(--at)}
+/* STEPS */
+.steps{display:flex;margin-bottom:1.25rem;border-radius:12px;overflow:hidden;border:1px solid #E0DDD5}
+.step-t{flex:1;padding:9px 6px;text-align:center;font-size:11px;background:white;cursor:pointer;border-right:1px solid #E0DDD5;transition:background .15s}
+.step-t:last-child{border-right:none}.step-t b{font-size:14px;display:block;font-weight:700}
+.step-t.active{background:var(--al);color:var(--at)}.step-t.done{background:var(--a);color:white}
+/* CALENDAR */
+.mode-toggle{display:flex;background:#F0EDE5;border-radius:8px;padding:3px;margin-bottom:1rem;gap:2px}
+.mode-btn{flex:1;padding:7px 10px;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#888;background:none;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.mode-btn.active{background:white;color:#333;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mode-btn.vact{background:#EDE9F8;color:#5B3EAC;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.mnav button{background:white;border:1px solid #DDD;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px;font-family:inherit;color:#333;display:flex;align-items:center;gap:4px}
+.mnav button:hover{background:#F5F5F0}.mtitle{font-size:17px;font-weight:700}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.ch{text-align:center;font-size:11px;font-weight:700;color:#999;padding:4px 0;text-transform:uppercase}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all .1s;color:#333;background:#F8F7F4;user-select:none}
+.cd:hover:not(.empty):not(.we):not(.off){background:var(--al);color:var(--at);border-color:var(--a)}
+.cd.biked{background:var(--a);color:white;font-weight:700}
+.cd.we{opacity:.28;cursor:default;background:none;border:none}
+.cd.off{cursor:default}.cd.fdag{background:#FEF3E8;color:#B85000;border-color:#FDDCB5}
+.cd.vakdag{background:#EEF4FE;color:#2D6CB8;border-color:#C8DAFB}
+.cd.verlof{background:#EDE9F8;color:#5B3EAC;border-color:#D6CFF0}
+.cd.empty{background:none;cursor:default;border:none}
+.cd.conflict{background:#FEE2E2;color:#B91C1C;border-color:#FCA5A5;cursor:not-allowed}
+.verlof-mode .cd:hover:not(.empty):not(.we):not(.off){background:#EDE9F8;color:#5B3EAC;border-color:#9B85DC}
+.verlof-mode .cd.verlof{background:#5B3EAC;color:white;font-weight:700;border-color:#5B3EAC}
+.leg{display:flex;gap:12px;font-size:11px;color:#777;margin-top:10px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px}.ld{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1rem}
+.stat{background:#F8F7F4;border-radius:10px;padding:12px 14px}
+.sl{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:5px}
+.sv{font-size:22px;font-weight:700}.su{font-size:12px;color:#999}
+.lbtn{background:none;border:none;color:var(--a);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0}
+/* TRAJECT */
+.traj-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F8F7F4;border-radius:8px;margin-bottom:8px;gap:10px}
+.traj-info{display:flex;align-items:center;gap:10px;flex:1}
+.traj-school{font-size:14px;font-weight:500}
+.traj-km{font-size:13px;color:#888}
+.traj-del{background:none;border:none;cursor:pointer;color:#CCC;font-size:18px;padding:0;transition:color .15s}
+.traj-del:hover{color:#E24B4A}
+.traj-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.ttab{padding:7px 14px;border-radius:20px;border:1px solid #DDD;background:white;font-size:13px;cursor:pointer;font-family:inherit;color:#555;transition:all .15s}
+.ttab.active{background:var(--a);border-color:var(--a);color:white;font-weight:500}
+.add-btn{background:none;border:1px dashed #CCC;border-radius:8px;padding:8px 14px;font-size:13px;color:#888;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;width:100%;justify-content:center;margin-top:8px;transition:all .15s}
+.add-btn:hover{border-color:var(--a);color:var(--at);background:var(--al)}
+.traj-form{background:#F0F7F3;border:1px solid var(--ab);border-radius:10px;padding:14px;margin-top:10px;display:none}
+.traj-form.on{display:block}
+/* DIENSTREIZEN TABLE */
+.drtbl{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:13px}
+.drtbl th{text-align:left;padding:7px 6px;border-bottom:2px solid #EEE;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#999}
+.drtbl td{padding:5px 4px;border-bottom:1px solid #F5F2EA;vertical-align:middle}
+.drtbl td input,.drtbl td select{padding:6px 8px;font-size:12px;border-radius:6px}
+.drtbl td input[type=number]{width:80px}.drtbl td input[type=date]{width:130px}
+.drtbl .del-btn{background:none;border:none;color:#CCC;cursor:pointer;font-size:16px;padding:4px;transition:color .15s}
+.drtbl .del-btn:hover{color:#E24B4A}
+.drtbl tfoot td{padding:8px 6px;font-weight:600;border-top:2px solid #EEE;background:#F8F7F4}
+.tbl-section-hdr{font-size:12px;font-weight:700;color:var(--at);background:var(--al);padding:7px 10px;border-radius:7px;margin:10px 0 8px;display:flex;align-items:center;gap:6px}
+/* SUMMARY */
+.st{width:100%;border-collapse:collapse}
+.st td{padding:9px 0;border-bottom:1px solid #F0EDE5;font-size:14px}
+.st td:first-child{color:#888;width:40%}.st tr:last-child td{border-bottom:none}
+.straj{width:100%;border-collapse:collapse}
+.straj th{text-align:left;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;padding:6px 0;border-bottom:2px solid #EEE}
+.straj td{padding:7px 0;border-bottom:1px solid #F5F2EA;font-size:13px}
+.straj tr.tot td{font-weight:700;border-top:2px solid #EEE;border-bottom:none}
+.tbox{background:var(--al);border-radius:12px;padding:1rem 1.25rem;margin-top:1rem;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tl{font-size:14px;font-weight:600;color:var(--at)}.ta{font-size:28px;font-weight:700;color:var(--a)}
+.sig{border:1px solid #DDD;border-radius:10px;padding:14px;cursor:pointer}
+.sigl{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:8px}
+.sigd{font-size:12px;color:#AAA;margin-top:.5rem}
+.decl{font-size:13px;color:#666;line-height:1.65}
+/* AANVRAAG CARDS (directeur/secretariaat) */
+.av-card{border:1px solid #E8E5DC;border-radius:12px;margin-bottom:.75rem;overflow:hidden;background:white}
+.av-card.gdk{border-color:var(--ab);background:var(--al)}
+.av-card.vrw{border-color:#C4D4EE;background:#E8EFF8}
+.av-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px;gap:10px;flex-wrap:wrap;cursor:pointer}
+.av-naam{font-size:15px;font-weight:600}
+.av-meta{font-size:12px;color:#888;margin-top:3px}
+.av-eur{font-size:18px;font-weight:700;color:var(--a);white-space:nowrap}
+.av-body{border-top:1px solid #F0EDE5;padding:14px;display:none}
+.av-body.on{display:block}
+.av-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px}
+.av-tbl td{padding:6px 0;border-bottom:1px solid #F5F2EA}
+.av-tbl td:first-child{color:#888;width:42%}
+.av-tbl tr:last-child td{border-bottom:none}
+.av-subtbl{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
+.av-subtbl th{text-align:left;padding:5px 6px;border-bottom:1px solid #EEE;font-size:10px;text-transform:uppercase;color:#AAA}
+.av-subtbl td{padding:5px 6px;border-bottom:1px solid #F5F2EA}
+.av-subtbl tr:last-child td{border-bottom:none}
+/* GOEDKEURINGSVINKJE */
+.check-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F8F7F4;border-radius:8px;cursor:pointer;transition:background .15s;margin-top:10px}
+.check-row:hover{background:var(--al)}.check-row.checked{background:var(--al);border:1px solid var(--ab)}
+.chk{width:20px;height:20px;border:2px solid #CCC;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;background:white}
+.chk.on{background:var(--a2);border-color:var(--a2)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600}
+.badge.fiets{background:#E8F4EE;color:#0F4A27}.badge.ov{background:#EEF4FE;color:#1A4E8E}.badge.auto{background:#FEF3E8;color:#7A3200}
+.badge.ind{background:#FEF3E8;color:#B85000}.badge.gdk{background:var(--al);color:var(--at)}.badge.vrw{background:#EEF4FE;color:#1A4E8E}
+/* OVERVIEW TABLE (secretariaat) */
+.ovtbl{width:100%;border-collapse:collapse;font-size:13px}
+.ovtbl th{text-align:left;padding:8px;border-bottom:2px solid #EEE;font-size:11px;font-weight:700;color:#999;text-transform:uppercase}
+.ovtbl th.r{text-align:right}.ovtbl td{padding:9px 8px;border-bottom:1px solid #F5F2EA}
+.ovtbl td.r{text-align:right}.ovtbl .type-hdr td{background:var(--al3);font-weight:700;font-size:12px;color:var(--a3);padding:6px 8px;border-bottom:1px solid #FDDCB5}
+.ovtbl .tot-row td{font-weight:700;border-top:2px solid #DDD;border-bottom:none;background:var(--al3);color:var(--a3)}
+.tbox-sec{background:var(--al3);border-radius:12px;padding:14px 18px;margin-top:1rem;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tl-sec{font-size:14px;font-weight:600;color:var(--a3)}.ta-sec{font-size:28px;font-weight:700;color:var(--a3)}
+/* MISC */
+.empty-state{text-align:center;padding:32px;color:#AAA;font-size:14px}
+.empty-state i{font-size:36px;display:block;margin-bottom:10px}
+.notif{position:fixed;bottom:24px;right:24px;background:var(--a);color:white;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;max-width:340px;text-align:center}
+.notif.on{opacity:1}
+.warnbox{position:fixed;bottom:24px;right:24px;background:#B91C1C;color:white;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;max-width:320px;text-align:center}
+.warnbox.on{opacity:1}
+.page{display:none}.page.active{display:block}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:flex-end}
+.filter-row .field{margin:0;flex:1;min-width:120px}
+.sbadge{display:none;align-items:center;gap:6px;font-size:12px;color:var(--at);background:var(--al);padding:6px 12px;border-radius:20px;margin-bottom:.75rem;border:1px solid var(--ab)}
+.sbadge.on{display:inline-flex}
+.refreshing{opacity:.5;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SMART CHIPS: adresautocomplete ───────────────────── */
+.chip-wrap{position:relative;width:100%}
+.chip-input{width:100%;padding:6px 8px;border:1px solid #DDD;border-radius:6px;font-size:12px;font-family:inherit;transition:border-color .15s}
+.chip-input:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 2px rgba(27,110,58,.1)}
+.chip-selected{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;background:var(--al);border:1px solid var(--ab);border-radius:16px;font-size:12px;color:var(--at);cursor:default;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-selected i{font-size:13px;color:var(--a);flex-shrink:0}
+.chip-selected .chip-x{background:none;border:none;cursor:pointer;color:var(--at);font-size:14px;padding:0;line-height:1;flex-shrink:0;opacity:.7;margin-left:2px}
+.chip-selected .chip-x:hover{opacity:1}
+.chip-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #DDD;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto}
+.chip-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;cursor:pointer;transition:background .1s;border-bottom:1px solid #F5F2EA}
+.chip-item:last-child{border-bottom:none}
+.chip-item:hover{background:var(--al)}
+.chip-item i{font-size:15px;color:var(--a);flex-shrink:0;margin-top:1px}
+.chip-item-main{font-size:13px;font-weight:500;color:#1A1A18}
+.chip-item-sub{font-size:11px;color:#888;margin-top:2px}
+.chip-loading{padding:10px 12px;font-size:12px;color:#AAA;display:flex;align-items:center;gap:8px}
+.chip-empty{padding:10px 12px;font-size:12px;color:#AAA}
+
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="viewLoading" class="splash">
+  <div class="splash-logo"><i class="ti ti-receipt"></i></div>
+  <h1>Onkosten — Londerzeel</h1>
+  <p>Scholengemeenschap Lonka</p>
+  <div class="spin"></div>
+</div>
+
+<!-- ERROR -->
+<div id="viewError" style="display:none" class="splash">
+  <div class="splash-logo" style="background:#B91C1C"><i class="ti ti-alert-circle"></i></div>
+  <h1>Er is een fout opgetreden</h1>
+  <p id="errMsg">Onbekende fout</p>
+  <button class="btn" onclick="location.reload()"><i class="ti ti-refresh"></i>Herladen</button>
+</div>
+
+<!-- LOGIN -->
+<div id="viewLogin" style="display:none" class="splash">
+  <div class="splash-logo"><i class="ti ti-receipt"></i></div>
+  <h1>Onkosten — Londerzeel</h1>
+  <p>Meld aan met uw Microsoft 365-account om verder te gaan.</p>
+  <button class="btn p" onclick="login()"><i class="ti ti-brand-microsoft"></i>Aanmelden</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="viewApp" style="display:none" class="app-shell">
+  <div class="topbar">
+    <div class="topbar-l">
+      <i class="ti ti-receipt" style="font-size:22px"></i>
+      <div>
+        <h1>Onkosten — Londerzeel</h1>
+        <p>Scholengemeenschap Lonka</p>
+      </div>
+    </div>
+    <div class="topbar-r">
+      <div class="user-chip">
+        <i class="ti ti-user"></i>
+        <span id="topNaam">—</span>
+        <span id="topRolPill" class="role-pill role-lk" style="margin-left:4px">—</span>
+      </div>
+      <button class="icon-btn" onclick="refresh()" title="Verversen"><i class="ti ti-refresh"></i></button>
+      <button class="icon-btn" id="btnRolWissel" onclick="wisselRol()" title="Wissel van rol" style="display:none"><i class="ti ti-switch-horizontal"></i></button>
+      <button class="icon-btn" onclick="logout()" title="Afmelden"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="navtabs" id="navTabs"></div>
+
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+    <div class="empty-state"><div class="spin" style="margin:0 auto"></div></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+<div class="warnbox" id="warnbox"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// CONFIG — vervang na installatie
+// ═══════════════════════════════════════════════════════════════════
+const CONFIG = {
+  clientId:    '3fab8a0f-19a6-4b49-aa4e-e45d484d6b4b',
+  tenantId:    '655d15e1-e5fc-4868-8462-8463dc0ff014',
+  siteId:      'londerwijs.sharepoint.com,72bf5458-143a-4966-913b-693a9b2ffb83,4d5ecb10-38f0-422f-b892-af256a5da6fc',
+  lijstIds: {
+    profielen:  'GUID_PROFIELEN',    // Nieuwe lijst — zie installatiegids
+    aanvragen:  '2e2f50d4-2ee2-4dbe-b216-6279501b39ed',
+    gebruikers: '708a4841-b1d4-4617-9dfe-c3063fd91719',
+  },
+  redirectUri:  'https://lon-ka.github.io/LON-Onkosten/',
+  campus:       'Londerzeel',
+  tariefFiets:  0.21,
+  tariefAuto:   0.43,
+  tariefCarpool:0.24,
+  scholen:      ['Centrumschool','Kouterschool','School Ter Elst'],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// CONSTANTEN
+// ═══════════════════════════════════════════════════════════════════
+const MND=['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+const MND_S=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+const TYPE_LBL={fiets:'Fietsvergoeding',ov:'OV & Parkeer',auto:'Eigen voertuig'};
+const STATUS_LBL={ingediend:'Ingediend',goedgekeurd:'Goedgekeurd',verwerkt:'Verwerkt'};
+
+const FEESTDAGEN=new Set(['2025-01-01','2025-04-21','2025-05-01','2025-05-29','2025-06-09','2025-07-11','2025-07-21','2025-08-15','2025-11-01','2025-11-11','2025-12-25','2026-01-01','2026-04-06','2026-05-01','2026-05-14','2026-05-25','2026-07-11','2026-07-21','2026-08-15','2026-11-01','2026-11-11','2026-12-25','2027-01-01','2027-03-29','2027-05-01','2027-05-06','2027-05-17','2027-07-11','2027-07-21','2027-08-15','2027-11-01','2027-11-11','2027-12-25','2028-01-01','2028-04-17','2028-05-01','2028-05-25','2028-06-05','2028-07-11','2028-07-21','2028-08-15','2028-11-01','2028-11-11','2028-12-25','2029-01-01','2029-04-02','2029-05-01','2029-05-10','2029-05-21','2029-07-11','2029-07-21','2029-08-15','2029-11-01','2029-11-11','2029-12-25','2030-01-01','2030-04-22','2030-05-01','2030-05-30','2030-06-10','2030-07-11','2030-07-21','2030-08-15','2030-11-01','2030-11-11','2030-12-25','2031-01-01','2031-04-14','2031-05-01','2031-05-22','2031-06-02','2031-07-11','2031-07-21','2031-08-15','2031-11-01','2031-11-11','2031-12-25']);
+const VAKDAGEN=(()=>{const r=[['2025-10-27','2025-11-02'],['2026-10-26','2026-11-01'],['2027-10-25','2027-10-31'],['2028-10-30','2028-11-05'],['2029-10-28','2029-11-03'],['2030-10-28','2030-11-03'],['2031-10-27','2031-11-02'],['2025-12-22','2026-01-04'],['2026-12-21','2027-01-03'],['2027-12-27','2028-01-09'],['2028-12-25','2029-01-06'],['2029-12-23','2030-01-05'],['2030-12-22','2031-01-04'],['2026-02-16','2026-02-22'],['2027-02-08','2027-02-14'],['2028-02-28','2028-03-05'],['2029-02-11','2029-02-17'],['2030-03-04','2030-03-10'],['2031-02-17','2031-02-23'],['2026-03-30','2026-04-12'],['2027-03-22','2027-04-04'],['2028-04-03','2028-04-16'],['2029-04-07','2029-04-20'],['2030-04-07','2030-04-20'],['2031-04-07','2031-04-20'],['2026-05-14','2026-05-15'],['2027-05-06','2027-05-07'],['2028-05-25','2028-05-26'],['2029-05-10','2029-05-11'],['2030-05-30','2030-05-31'],['2031-05-22','2031-05-23'],['2025-07-01','2025-08-31'],['2026-07-01','2026-08-31'],['2027-07-01','2027-08-31'],['2028-07-01','2028-08-31'],['2029-07-01','2029-08-31'],['2030-07-01','2030-08-31'],['2031-07-01','2031-08-31']];const s=new Set();r.forEach(([a,b])=>{let d=new Date(a+'T00:00:00');const e=new Date(b+'T00:00:00');while(d<=e){s.add(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}});return s;})();
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let S={
+  view:'loading', // loading|error|login|app
+  user:null,      // {email,naam,school,rol,spId}
+  tabIdx:0,
+  aanvragen:[],
+  // leerkracht lokale staat
+  mod:'fiets',fStep:0,
+  trajecten:[],curTrajId:null,trajCounter:1,
+  biked:{},leave:{},
+  calYr:new Date().getFullYear(),calMo:new Date().getMonth(),
+  calMode:'fiets',
+  fAccepted:false,oAccepted:false,aAccepted:false,
+  parkRows:[],ovRows:[],
+  // filters secretariaat
+  fMaand:'',fType:'',fSchool:'',
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// MSAL
+// ═══════════════════════════════════════════════════════════════════
+const msalApp = new msal.PublicClientApplication({
+  auth:{ clientId:CONFIG.clientId, authority:`https://login.microsoftonline.com/${CONFIG.tenantId}`, redirectUri:CONFIG.redirectUri },
+  cache:{ cacheLocation:'sessionStorage', storeAuthStateInCookie:false },
+});
+const SCOPES=['User.Read','Sites.ReadWrite.All'];
+
+async function getToken(){
+  const accounts=msalApp.getAllAccounts();
+  if(!accounts.length)return null;
+  try{
+    const r=await msalApp.acquireTokenSilent({scopes:SCOPES,account:accounts[0]});
+    return r.accessToken;
+  }catch(e){
+    // Silent failed — redirect to Microsoft for new token
+    await msalApp.acquireTokenRedirect({scopes:SCOPES,account:accounts[0]});
+    return null;
+  }
+}
+async function login(){
+  try{
+    await msalApp.loginRedirect({scopes:SCOPES});
+  }catch(e){showError('Aanmelden mislukt: '+e.message);}
+}
+async function logout(){
+  await msalApp.logoutRedirect({postLogoutRedirectUri: CONFIG.redirectUri});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GRAPH API
+// ═══════════════════════════════════════════════════════════════════
+async function graph(method,path,body=null){
+  const token=await getToken();
+  if(!token)throw new Error('Geen token');
+  const base=`https://graph.microsoft.com/v1.0/sites/${CONFIG.siteId}`;
+  const r=await fetch(base+path,{
+    method,
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+    body:body?JSON.stringify(body):undefined,
+  });
+  if(!r.ok){const t=await r.text();throw new Error(`Graph ${r.status}: ${t.slice(0,200)}`);}
+  if(r.status===204)return null;
+  return r.json();
+}
+
+async function graphGet(path){return graph('GET',path);}
+async function graphPost(path,body){return graph('POST',path,body);}
+async function graphPatch(path,body){return graph('PATCH',path,body);}
+
+async function getListItems(listId,filter='',select=''){
+  let url=`/lists/${listId}/items?expand=fields&$top=999&$orderby=id`;
+  if(filter)url+=`&$filter=${encodeURIComponent(filter)}`;
+  if(select)url+=`&$select=${select}`;
+  const r=await graphGet(url);
+  return (r.value||[]).map(i=>({id:i.id,...i.fields}));
+}
+async function createItem(listId,fields){return graphPost(`/lists/${listId}/items`,{fields});}
+async function updateItem(listId,itemId,fields){return graphPatch(`/lists/${listId}/items/${itemId}/fields`,fields);}
+
+// ═══════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════
+// ── PROFIEL: SharePoint opslaan/laden (GDPR-proof) ───────────────
+let _profielItemId = null; // SharePoint item ID van huidig profiel
+
+async function loadProfiel(email){
+  // Laad profiel uit SharePoint Profielen-lijst
+  if(!CONFIG.lijstIds.profielen || CONFIG.lijstIds.profielen.startsWith('GUID')){
+    // Fallback naar localStorage als profielen-lijst nog niet geconfigureerd
+    try{const raw=localStorage.getItem('lonka-profiel-'+email);if(raw)S.fForm=JSON.parse(raw);}catch(e){}
+    return;
+  }
+  try{
+    const alle = await getListItems(CONFIG.lijstIds.profielen);
+    const item = alle.find(p=>(p.Title||'').toLowerCase()===email);
+    if(item){
+      _profielItemId = item.id;
+      S.fForm = {
+        fn: item.Voornaam||'', ln: item.Naam||'',
+        st: item.Stamboek||'', rr: item.Rijksreg||'',
+        ib: item.IBAN||'', adr: item.Adres||'',
+      };
+      S.aVoertuig = item.Voertuig||'';
+      S.aTarief   = parseFloat(item.ATarief)||CONFIG.tariefAuto;
+      S.aCpTarief = parseFloat(item.ACpTarief)||CONFIG.tariefCarpool;
+    }
+  }catch(e){ console.warn('Profiel laden mislukt:', e.message); }
+}
+
+async function saveProfiel(email, data){
+  // Sla profiel op in SharePoint (upsert)
+  if(!CONFIG.lijstIds.profielen || CONFIG.lijstIds.profielen.startsWith('GUID')){
+    // Fallback naar localStorage
+    try{localStorage.setItem('lonka-profiel-'+email,JSON.stringify(data));}catch(e){}
+    return;
+  }
+  const fields = {
+    Title: email,
+    Voornaam: data.fn||'', Naam: data.ln||'',
+    Stamboek: data.st||'', Rijksreg: data.rr||'',
+    IBAN: data.ib||'', Adres: data.adr||'',
+    Voertuig: S.aVoertuig||'',
+    ATarief: S.aTarief||CONFIG.tariefAuto,
+    ACpTarief: S.aCpTarief||CONFIG.tariefCarpool,
+  };
+  try{
+    if(_profielItemId){
+      await updateItem(CONFIG.lijstIds.profielen, _profielItemId, fields);
+    } else {
+      const result = await createItem(CONFIG.lijstIds.profielen, fields);
+      _profielItemId = result?.id || null;
+    }
+  }catch(e){ console.warn('Profiel opslaan mislukt:', e.message); }
+}
+
+// ── ROLKIEZER ──────────────────────────────────────────────────────
+function showRolKiezer(gebruikers,me){
+  showView('login');
+  document.getElementById('viewLogin').innerHTML=`
+    <div class="splash-logo"><i class="ti ti-user-check"></i></div>
+    <h1>Kies uw rol</h1>
+    <p style="color:#888;text-align:center;max-width:320px">U heeft meerdere rollen. Kies waarmee u wil aanmelden.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px">
+      ${gebruikers.map((u,i)=>`
+        <button class="btn p" style="justify-content:center;font-size:15px;padding:14px" onclick="activeerRol(window._rolGebruikers[${i}],window._rolMe)">
+          <i class="ti ti-${{leerkracht:'pencil',directeur:'shield-check',secretariaat:'building'}[u.Rol]||'user'}"></i>
+          ${u.Rol||'leerkracht'} — ${u.School||''}
+        </button>`).join('')}
+    </div>`;
+  window._rolGebruikers=gebruikers;
+  window._rolMe=me;
+}
+
+async function activeerRol(u,me){
+  const email=(me.mail||me.userPrincipalName||'').toLowerCase();
+  S.user={email,naam:u.Naam||me.displayName||email,school:u.School||'',rol:u.Rol||'leerkracht',spId:u.id};
+  document.getElementById('topNaam').textContent=S.user.naam;
+  const rp=document.getElementById('topRolPill');
+  rp.textContent=S.user.rol;
+  rp.className='role-pill role-'+(S.user.rol==='directeur'?'dir':S.user.rol==='secretariaat'?'sec':'lk');
+  S.tabIdx=0;
+  await loadAanvragen();
+  showView('app');
+  // Toon rolwisselknop als gebruiker meerdere rollen heeft
+  const btnRw=document.getElementById('btnRolWissel');
+  if(btnRw&&S.alleRollen&&S.alleRollen.length>1)btnRw.style.display='flex';
+  renderNav();
+  renderTab();
+}
+
+function wisselRol(){
+  if(!S.alleRollen||S.alleRollen.length<=1)return;
+  // Bouw een tijdelijk me-object
+  const me={mail:S.user.email,displayName:S.user.naam};
+  showRolKiezer(S.alleRollen,me);
+}
+
+async function boot(){
+  try{
+    await msalApp.initialize();
+    const r=await msalApp.handleRedirectPromise();
+    const accounts=msalApp.getAllAccounts();
+    if(!accounts.length){showView('login');return;}
+
+    // Huidige gebruiker ophalen
+    const token=await getToken();
+    const me=await fetch('https://graph.microsoft.com/v1.0/me',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
+    const email=(me.mail||me.userPrincipalName||'').toLowerCase();
+
+    // Rol ophalen uit SharePoint — alle gebruikers laden, client-side filteren op e-mail
+    const alleGebruikers=await getListItems(CONFIG.lijstIds.gebruikers);
+    const gebruikers=alleGebruikers.filter(u=>(u.Title||'').toLowerCase()===email);
+    if(!gebruikers.length){showError(`Uw account (${email}) is niet geconfigureerd. Vraag de beheerder u toe te voegen in de lijst Gebruikers.`);return;}
+
+    // Profiel laden uit localStorage
+    S.displayNaam=me.displayName||email;
+    S.email=email;
+    S.alleRollen=gebruikers; // bewaar alle rollen voor rolkiezer
+    loadProfiel(email);
+
+    // Meerdere rollen? Toon rolkiezer. Anders direct doorgaan.
+    if(gebruikers.length>1){
+      showRolKiezer(gebruikers,me);
+      return;
+    }
+    activeerRol(gebruikers[0],me);
+  }catch(e){
+    console.error(e);
+    showError(e.message);
+  }
+}
+
+async function loadAanvragen(){
+  // Laad alle items zonder server-side filter (vermijdt indexeringsproblemen)
+  // Client-side filteren op basis van rol
+  const alle=await getListItems(CONFIG.lijstIds.aanvragen);
+  if(S.user.rol==='leerkracht'){
+    S.aanvragen=alle.filter(a=>(a.Email||'').toLowerCase()===S.user.email);
+  } else if(S.user.rol==='directeur'){
+    S.aanvragen=alle.filter(a=>a.Status==='ingediend');
+  } else {
+    S.aanvragen=alle;
+  }
+}
+
+async function refresh(){
+  const btn=document.querySelector('.icon-btn[title="Verversen"]');
+  if(btn)btn.querySelector('i').style.animation='spin .8s linear infinite';
+  try{await loadAanvragen();renderTab();}catch(e){warnMsg('Verversen mislukt: '+e.message);}
+  if(btn)btn.querySelector('i').style.animation='';
+  notify('Bijgewerkt ✓');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VIEW HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function showView(v){
+  ['Loading','Error','Login','App'].forEach(n=>document.getElementById('view'+n).style.display='none');
+  document.getElementById('view'+(v.charAt(0).toUpperCase()+v.slice(1))).style.display=v==='app'?'flex':'';
+}
+function showError(msg){document.getElementById('errMsg').textContent=msg;showView('error');}
+function notify(msg){const n=document.getElementById('notif');n.textContent=msg;n.classList.add('on');setTimeout(()=>n.classList.remove('on'),3000);}
+function warnMsg(msg){const w=document.getElementById('warnbox');w.textContent=msg;w.classList.add('on');setTimeout(()=>w.classList.remove('on'),4000);}
+function fmtEur(v){return'€ '+parseFloat(v||0).toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════
+const NAV={
+  leerkracht:[
+    {icon:'ti-pencil',label:'Aanvraag indienen'},
+    {icon:'ti-list',label:'Mijn aanvragen'},
+  ],
+  directeur:[
+    {icon:'ti-clock',label:'Te beoordelen'},
+    {icon:'ti-shield-check',label:'Goedgekeurd'},
+  ],
+  secretariaat:[
+    {icon:'ti-inbox',label:'Aanvragen'},
+    {icon:'ti-table',label:'Maandoverzicht'},
+    {icon:'ti-settings',label:'Instellingen'},
+  ],
+};
+
+function renderNav(){
+  const tabs=NAV[S.user.rol]||NAV.leerkracht;
+  const cls=S.user.rol==='directeur'?'dir':S.user.rol==='secretariaat'?'sec':'';
+  document.getElementById('navTabs').innerHTML=tabs.map((t,i)=>
+    `<button class="navtab ${i===S.tabIdx?'active '+cls:''}" onclick="setTab(${i})"><i class="ti ${t.icon}"></i>${t.label}</button>`
+  ).join('');
+}
+function setTab(i){S.tabIdx=i;renderNav();renderTab();}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB ROUTING
+// ═══════════════════════════════════════════════════════════════════
+function renderTab(){
+  const r=S.user.rol;
+  if(r==='leerkracht'){
+    if(S.tabIdx===0)renderLkFormulier();
+    else renderLkAanvragen();
+  } else if(r==='directeur'){
+    if(S.tabIdx===0)renderDirTeBeoordelen();
+    else renderDirGoedgekeurd();
+  } else {
+    if(S.tabIdx===0)renderSecAanvragen();
+    else if(S.tabIdx===1)renderSecOverzicht();
+    else renderSecInstellingen();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LEERKRACHT — FORMULIER
+// ═══════════════════════════════════════════════════════════════════
+function renderLkFormulier(){
+  document.getElementById('mainContent').innerHTML=`
+    <div class="mod-pick">
+      <button class="mod-btn${S.mod==='fiets'?' active':''}" onclick="setMod('fiets')"><i class="ti ti-bike"></i><span>Fietsvergoeding</span><small>Woon-werkverkeer</small></button>
+      <button class="mod-btn${S.mod==='ov'?' active':''}" onclick="setMod('ov')"><i class="ti ti-bus"></i><span>OV &amp; Parkeer</span><small>Dienstreizen</small></button>
+      <button class="mod-btn${S.mod==='auto'?' active':''}" onclick="setMod('auto')"><i class="ti ti-car"></i><span>Eigen voertuig</span><small>Dienstreizen</small></button>
+    </div>
+    <div id="modContent"></div>`;
+  renderMod();
+}
+
+function setMod(m){S.mod=m;renderLkFormulier();}
+
+function renderMod(){
+  if(S.mod==='fiets')renderFietsStap(S.fStep);
+  else if(S.mod==='ov')renderOvFormulier();
+  else renderAutoFormulier();
+}
+
+// ── FIETS ──────────────────────────────────────────────────────────
+function renderFietsStap(n){
+  S.fStep=n;
+  const steps=['Gegevens','Registratie','Overzicht'];
+  const stepsHtml=steps.map((s,i)=>`<div class="step-t${i<n?' done':i===n?' active':''}" onclick="renderFietsStap(${i})"><b>${i+1}</b>${s}</div>`).join('');
+  const mc=document.getElementById('modContent');
+  mc.innerHTML=`<div class="steps">${stepsHtml}</div><div id="fContent"></div>`;
+  if(n===0)renderFietsStap0();
+  else if(n===1)renderFietsStap1();
+  else renderFietsStap2();
+}
+
+function renderFietsStap0(){
+  const f=S.fForm||{};
+  document.getElementById('fContent').innerHTML=`
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-user"></i>Persoonsgegevens</div></div>
+      <div id="sbadge" class="sbadge${S.fProfileLoaded?' on':''}"><i class="ti ti-device-floppy" style="font-size:15px"></i>Profiel geladen</div>
+      <div class="fr">
+        <div class="field"><label>Voornaam</label><input id="f_fn" value="${f.fn||''}" placeholder="Voornaam"></div>
+        <div class="field"><label>Naam</label><input id="f_ln" value="${f.ln||''}" placeholder="Naam"></div>
+      </div>
+      <div class="field"><label>Stamboeknummer</label><input id="f_st" value="${f.st||''}" placeholder="bv. 29003110134-000001"></div>
+      <div class="fr">
+        <div class="field"><label>Rijksregisternummer</label><input id="f_rr" value="${f.rr||''}" placeholder="90.01.01-123.45"></div>
+        <div class="field"><label>IBAN</label><input id="f_ib" value="${f.ib||''}" placeholder="BE26 3770..."></div>
+      </div>
+      <div class="field"><label>Adres</label><input id="f_adr" value="${f.adr||''}" placeholder="Straat nr, gemeente"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-route"></i>Trajecten</div></div>
+      <div id="trajList"></div>
+      <button class="add-btn" onclick="showTrajForm()"><i class="ti ti-plus"></i>Traject toevoegen</button>
+      <div class="traj-form" id="trajForm">
+        <div class="fr">
+          <div class="field"><label>School</label>
+            <select id="addSchool"><option value="">— Kies —</option>${CONFIG.scholen.map(s=>`<option>${s}</option>`).join('')}</select>
+          </div>
+          <div class="field"><label>km heen+terug</label><input id="addKm" type="number" step="0.1" min="0.1" placeholder="8.4"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+          <button class="smbtn" onclick="hideTrajForm()">Annuleren</button>
+          <button class="smbtn p" onclick="addTraj()"><i class="ti ti-check"></i>Toevoegen</button>
+        </div>
+      </div>
+    </div>
+    <div class="br"><button class="btn p" onclick="saveFietsStap0()"><i class="ti ti-arrow-right"></i>Volgende</button></div>`;
+  renderTrajList();
+}
+
+function saveFietsProfielFromDOM(){
+  S.fForm={
+    fn:document.getElementById('f_fn')?.value||'',
+    ln:document.getElementById('f_ln')?.value||'',
+    st:document.getElementById('f_st')?.value||'',
+    rr:document.getElementById('f_rr')?.value||'',
+    ib:document.getElementById('f_ib')?.value||'',
+    adr:document.getElementById('f_adr')?.value||'',
+  };
+  // Bewaar in localStorage zodat profiel onthouden wordt
+  if(S.user)saveProfiel(S.user.email,S.fForm);
+}
+function saveFietsStap0(){
+  saveFietsProfielFromDOM();
+  if(!S.trajecten.length){warnMsg('Voeg minstens één traject toe.');return;}
+  renderFietsStap(1);
+  loadCalData(S.calYr,S.calMo);
+}
+
+function renderTrajList(){
+  const el=document.getElementById('trajList');if(!el)return;
+  if(!S.trajecten.length){el.innerHTML='<div style="color:#AAA;font-size:13px;text-align:center;padding:14px">Nog geen trajecten</div>';return;}
+  el.innerHTML=S.trajecten.map(t=>`<div class="traj-item"><div class="traj-info"><i class="ti ti-route" style="color:var(--a);font-size:16px;flex-shrink:0"></i><span class="traj-school">${t.school}</span><span class="traj-km">${parseFloat(t.km).toFixed(1)} km/dag</span></div><button class="traj-del" onclick="removeTraj('${t.id}')"><i class="ti ti-trash"></i></button></div>`).join('');
+}
+function showTrajForm(){document.getElementById('trajForm').classList.add('on');}
+function hideTrajForm(){document.getElementById('trajForm').classList.remove('on');}
+function addTraj(){
+  const school=document.getElementById('addSchool').value;
+  const km=parseFloat(document.getElementById('addKm').value);
+  if(!school){warnMsg('Kies een school.');return;}
+  if(!km||km<=0){warnMsg('Geldige afstand vereist.');return;}
+  const id='t'+(S.trajCounter++);
+  S.trajecten.push({id,school,km});
+  if(!S.curTrajId)S.curTrajId=id;
+  hideTrajForm();renderTrajList();
+}
+function removeTraj(id){
+  if(S.trajecten.length===1){warnMsg('Minstens één traject vereist.');return;}
+  S.trajecten=S.trajecten.filter(t=>t.id!==id);
+  if(S.curTrajId===id)S.curTrajId=S.trajecten[0].id;
+  renderTrajList();
+}
+
+// ── CALENDAR ──
+function mk(tid,y,m){return`${tid}-${y}-${String(m).padStart(2,'0')}`;}
+function lk(y,m){return`leave-${y}-${String(m).padStart(2,'0')}`;}
+function isOff(y,m,d){const s=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const lv=S.leave[lk(y,m)];return FEESTDAGEN.has(s)||VAKDAGEN.has(s)||(lv&&lv.has(d));}
+
+function loadCalData(y,m){
+  for(const t of S.trajecten){const k=mk(t.id,y,m);if(!S.biked[k])S.biked[k]=new Set();}
+  const lkk=lk(y,m);if(!S.leave[lkk])S.leave[lkk]=new Set();
+  renderFietsStap1();
+}
+
+function renderFietsStap1(){
+  if(!S.curTrajId&&S.trajecten.length)S.curTrajId=S.trajecten[0].id;
+  const tabs=S.trajecten.length>1?`<div class="traj-tabs">${S.trajecten.map(t=>`<button class="ttab${t.id===S.curTrajId?' active':''}" onclick="switchTraj('${t.id}')">${t.school} <span style="font-size:11px;opacity:.75">${parseFloat(t.km).toFixed(1)}km</span></button>`).join('')}</div>`:'';
+  document.getElementById('fContent').innerHTML=`
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-calendar"></i>Registreren</div></div>
+      ${tabs}
+      <div class="mode-toggle">
+        <button class="mode-btn${S.calMode==='fiets'?' active':''}" onclick="setCalMode('fiets')"><i class="ti ti-bike" style="font-size:15px"></i>Fietsdagen</button>
+        <button class="mode-btn${S.calMode==='verlof'?' vact':''}" onclick="setCalMode('verlof')"><i class="ti ti-calendar-off" style="font-size:15px"></i>Verlof</button>
+      </div>
+      <div class="mnav">
+        <button onclick="calNav(-1)"><i class="ti ti-chevron-left"></i>Vorige</button>
+        <span class="mtitle">${MND[S.calMo]} ${S.calYr}</span>
+        <button onclick="calNav(1)">Volgende<i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="cal${S.calMode==='verlof'?' verlof-mode':''}" id="calGrid"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px">
+        <div class="leg">
+          <div class="li"><div class="ld" style="background:var(--a)"></div>Gefietst</div>
+          <div class="li"><div class="ld" style="background:#FEF3E8;border:1px solid #FDDCB5"></div>Feestdag</div>
+          <div class="li"><div class="ld" style="background:#EEF4FE;border:1px solid #C8DAFB"></div>Vakantie</div>
+          <div class="li"><div class="ld" style="background:#EDE9F8;border:1px solid #D6CFF0"></div>Verlof</div>
+        </div>
+        ${S.calMode==='fiets'?`<button class="lbtn" id="toggleBtn" onclick="toggleAll()">Selecteer alle werkdagen</button>`:''}
+      </div>
+      ${S.calMode==='verlof'?'<div style="background:#F5F3FC;border:1px solid #D6CFF0;border-radius:8px;padding:10px 14px;font-size:12px;color:#5B3EAC;margin-top:.75rem"><i class="ti ti-info-circle" style="font-size:14px;vertical-align:-2px"></i> Klik op een dag om verlof te markeren.</div>':''}
+      <div class="stats" id="statsBlock">
+        <div class="stat"><div class="sl">Gefietste dagen</div><div class="sv" id="sDays">0</div></div>
+        <div class="stat"><div class="sl">Totaal km</div><div class="sv"><span id="sKm">0</span><span class="su"> km</span></div></div>
+        <div class="stat"><div class="sl">Vergoeding</div><div class="sv">€ <span id="sEur">0,00</span></div></div>
+      </div>
+    </div>
+    <div class="br">
+      <button class="btn" onclick="renderFietsStap(0)"><i class="ti ti-arrow-left"></i>Terug</button>
+      <button class="btn p" onclick="renderFietsStap(2)"><i class="ti ti-arrow-right"></i>Overzicht</button>
+    </div>`;
+  buildCal();
+}
+
+function buildCal(){
+  const el=document.getElementById('calGrid');if(!el)return;
+  el.innerHTML='';
+  ['Ma','Di','Wo','Do','Vr','Za','Zo'].forEach(d=>{const h=document.createElement('div');h.className='ch';h.textContent=d;el.appendChild(h);});
+  let dow=new Date(S.calYr,S.calMo,1).getDay();dow=dow===0?6:dow-1;
+  for(let i=0;i<dow;i++){const e=document.createElement('div');e.className='cd empty';el.appendChild(e);}
+  const dim=new Date(S.calYr,S.calMo+1,0).getDate();
+  for(let d=1;d<=dim;d++){
+    const k=mk(S.curTrajId,S.calYr,S.calMo);
+    const isWE=[0,6].includes(new Date(S.calYr,S.calMo,d).getDay());
+    const s=`${S.calYr}-${String(S.calMo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFD=FEESTDAGEN.has(s),isVak=VAKDAGEN.has(s);
+    const lv=S.leave[lk(S.calYr,S.calMo)];
+    const isLeave=lv&&lv.has(d);
+    const isBiked=S.biked[k]&&S.biked[k].has(d);
+    const isConflict=!isWE&&!isFD&&!isVak&&!isLeave&&S.trajecten.filter(t=>t.id!==S.curTrajId).some(t=>{const ok=mk(t.id,S.calYr,S.calMo);return S.biked[ok]&&S.biked[ok].has(d);});
+    let cls='cd';
+    if(isWE)cls+=' we';
+    else if(isFD)cls+=' off fdag';
+    else if(isVak)cls+=' off vakdag';
+    else if(isLeave)cls+=' off verlof';
+    else if(isBiked)cls+=' biked';
+    else if(isConflict)cls+=' conflict';
+    const div=document.createElement('div');div.className=cls;div.textContent=d;
+    if(isFD)div.title='Feestdag';else if(isVak)div.title='Vakantie';else if(isLeave)div.title='Verlof';else if(isConflict)div.title='Reeds bij ander traject';
+    if(!isWE){
+      if(S.calMode==='fiets'&&!isFD&&!isVak&&!isLeave&&!isConflict)div.onclick=()=>toggleBiked(d);
+      else if(S.calMode==='verlof'&&!isFD&&!isVak)div.onclick=()=>toggleLeave(d);
+    }
+    el.appendChild(div);
+  }
+  updateStats();
+  const tb=document.getElementById('toggleBtn');
+  if(tb){const wd=getWorkdays();const k=mk(S.curTrajId,S.calYr,S.calMo);const allOn=wd.every(d=>S.biked[k]&&S.biked[k].has(d));tb.textContent=allOn?'Deselecteer alle werkdagen':'Selecteer alle werkdagen';}
+}
+
+function getWorkdays(){
+  const dim=new Date(S.calYr,S.calMo+1,0).getDate();const wd=[];
+  for(let d=1;d<=dim;d++){if(![0,6].includes(new Date(S.calYr,S.calMo,d).getDay())&&!isOff(S.calYr,S.calMo,d))wd.push(d);}
+  return wd;
+}
+
+function toggleBiked(d){
+  if(!S.curTrajId)return;
+  const conflict=S.trajecten.filter(t=>t.id!==S.curTrajId).some(t=>{const ok=mk(t.id,S.calYr,S.calMo);return S.biked[ok]&&S.biked[ok].has(d);});
+  if(conflict){warnMsg('Deze dag staat al bij een ander traject.');return;}
+  const k=mk(S.curTrajId,S.calYr,S.calMo);
+  if(!S.biked[k])S.biked[k]=new Set();
+  S.biked[k].has(d)?S.biked[k].delete(d):S.biked[k].add(d);
+  buildCal();
+}
+
+function toggleLeave(d){
+  const k=lk(S.calYr,S.calMo);if(!S.leave[k])S.leave[k]=new Set();
+  let removed=false;
+  for(const t of S.trajecten){const bk=mk(t.id,S.calYr,S.calMo);if(S.biked[bk]&&S.biked[bk].has(d)){S.biked[bk].delete(d);removed=true;}}
+  S.leave[k].has(d)?S.leave[k].delete(d):S.leave[k].add(d);
+  if(removed)notify('Fietsdag verwijderd — dag als verlof gemarkeerd');
+  buildCal();
+}
+
+function toggleAll(){
+  if(!S.curTrajId)return;
+  const k=mk(S.curTrajId,S.calYr,S.calMo);
+  if(!S.biked[k])S.biked[k]=new Set();
+  const wd=getWorkdays();const allOn=wd.every(d=>S.biked[k].has(d));
+  if(allOn){wd.forEach(d=>S.biked[k].delete(d));}
+  else{let sk=0;wd.forEach(d=>{const c=S.trajecten.filter(t=>t.id!==S.curTrajId).some(t=>{const ok=mk(t.id,S.calYr,S.calMo);return S.biked[ok]&&S.biked[ok].has(d);});if(c)sk++;else S.biked[k].add(d);});if(sk>0)warnMsg(`${sk} dag(en) overgeslagen (al bij ander traject).`);}
+  buildCal();
+}
+
+function setCalMode(m){S.calMode=m;renderFietsStap1();}
+function switchTraj(id){S.curTrajId=id;renderFietsStap1();}
+function calNav(d){
+  S.calMo+=d;
+  if(S.calMo>11){S.calMo=0;S.calYr++;}
+  if(S.calMo<0){S.calMo=11;S.calYr--;}
+  for(const t of S.trajecten){const k=mk(t.id,S.calYr,S.calMo);if(!S.biked[k])S.biked[k]=new Set();}
+  const lkk=lk(S.calYr,S.calMo);if(!S.leave[lkk])S.leave[lkk]=new Set();
+  renderFietsStap1();
+}
+
+function updateStats(){
+  if(!S.curTrajId)return;
+  const t=S.trajecten.find(x=>x.id===S.curTrajId);if(!t)return;
+  const k=mk(S.curTrajId,S.calYr,S.calMo);
+  const days=S.biked[k]?S.biked[k].size:0;
+  const tkm=days*parseFloat(t.km);const eur=tkm*CONFIG.tariefFiets;
+  const d=document.getElementById('sDays');if(d)d.textContent=days;
+  const km=document.getElementById('sKm');if(km)km.textContent=tkm.toFixed(1);
+  const e=document.getElementById('sEur');if(e)e.textContent=eur.toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ── FIETS STAP 2 (overzicht + indienen) ──
+function renderFietsStap2(){
+  const f=S.fForm||{};
+  const nm=(f.fn||'')+' '+(f.ln||'');
+  let grandEur=0;let trajRows='';
+  for(const t of S.trajecten){
+    const k=mk(t.id,S.calYr,S.calMo);const days=S.biked[k]?S.biked[k].size:0;
+    const tkm=days*parseFloat(t.km);const eur=tkm*CONFIG.tariefFiets;grandEur+=eur;
+    trajRows+=`<tr><td>${t.school}</td><td>${days}</td><td style="text-align:right">${parseFloat(t.km).toFixed(1)}</td><td style="text-align:right">${tkm.toFixed(1)}</td><td style="text-align:right">${fmtEur(eur)}</td></tr>`;
+  }
+  if(S.trajecten.length>1){const totKm=S.trajecten.reduce((s,t)=>{const k=mk(t.id,S.calYr,S.calMo);const d=S.biked[k]?S.biked[k].size:0;return s+d*parseFloat(t.km);},0);trajRows+=`<tr class="tot"><td>Totaal</td><td>${S.trajecten.reduce((s,t)=>{const k=mk(t.id,S.calYr,S.calMo);return s+(S.biked[k]?S.biked[k].size:0);},0)}</td><td></td><td style="text-align:right">${totKm.toFixed(1)}</td><td style="text-align:right">${fmtEur(grandEur)}</td></tr>`;}
+
+  document.getElementById('fContent').innerHTML=`
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-id-badge"></i>Aanvrager</div></div>
+      <table class="st">
+        <tr><td>Naam</td><td>${nm.trim()||'—'}</td></tr>
+        <tr><td>Stamboeknummer</td><td>${f.st||'—'}</td></tr>
+        <tr><td>Rijksregisternummer</td><td>${f.rr||'—'}</td></tr>
+        <tr><td>Rekeningnummer</td><td>${f.ib||'—'}</td></tr>
+        <tr><td>Maand</td><td>${MND[S.calMo]} ${S.calYr}</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-calculator"></i>Berekening fiets</div></div>
+      <table class="straj">
+        <thead><tr><th>School</th><th>Dagen</th><th style="text-align:right">km/dag</th><th style="text-align:right">Tot.km</th><th style="text-align:right">Bedrag</th></tr></thead>
+        <tbody>${trajRows}</tbody>
+      </table>
+      <div class="tbox"><div><div class="tl">Totale vergoeding</div><div style="font-size:12px;color:#555">${fmtEur(grandEur)}</div></div><div class="ta">${fmtEur(grandEur)}</div></div>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-writing"></i>Erewoordverklaring</div></div>
+      <p class="decl">Ik verklaar op eer dat ik gedurende de vermelde maand de fiets heb gebruikt voor het woon-werkverkeer en kennis te hebben genomen van de regeling.</p>
+      <div style="margin-top:1rem">
+        <div class="sig${S.fAccepted?' checked':''}" id="fSig" onclick="toggleAccept('f')">
+          <div class="sigl">Aanvaarding</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+            <span id="fChk" style="width:20px;height:20px;border:2px solid #CCC;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:${S.fAccepted?'var(--a2)':'white'};border-color:${S.fAccepted?'var(--a2)':'#CCC'}">${S.fAccepted?'<i class="ti ti-check" style="color:white;font-size:14px"></i>':''}</span>
+            <span style="font-size:13px;color:#444">Ik bevestig bovenstaande verklaring op eer</span>
+          </div>
+          <div class="sigd" id="fDate">${S.fAcceptedDate||''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="br">
+      <button class="btn" onclick="renderFietsStap(1)"><i class="ti ti-arrow-left"></i>Terug</button>
+      <button class="btn p" id="btnIndienF" onclick="indienFiets()"><i class="ti ti-send"></i>Indienen</button>
+    </div>`;
+}
+
+function toggleAccept(mod){
+  if(mod==='f'){S.fAccepted=!S.fAccepted;S.fAcceptedDate=S.fAccepted?new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';renderFietsStap2();}
+  else if(mod==='o'){S.oAccepted=!S.oAccepted;S.oAcceptedDate=S.oAccepted?new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';renderOvFormulier(2);}
+  else{S.aAccepted=!S.aAccepted;S.aAcceptedDate=S.aAccepted?new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';renderAutoFormulier(2);}
+}
+
+async function indienFiets(){
+  if(!S.fAccepted){warnMsg('Aanvaard eerst de erewoordverklaring.');return;}
+  const f=S.fForm||{};
+  const nm=((f.fn||'')+' '+(f.ln||'')).trim();
+  let totalDays=0,totalKm=0,totalEur=0;
+  const traject=S.trajecten.map(t=>{
+    const k=mk(t.id,S.calYr,S.calMo);const days=S.biked[k]?[...S.biked[k]]:[];
+    const tkm=days.length*parseFloat(t.km);const eur=tkm*CONFIG.tariefFiets;
+    totalDays+=days.length;totalKm+=tkm;totalEur+=eur;
+    return{school:t.school,km:parseFloat(t.km),days};
+  });
+  const dataJson=JSON.stringify({traject,rate:CONFIG.tariefFiets,aanvaard:S.fAcceptedDate});
+  const btn=document.getElementById('btnIndienF');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader" style="animation:spin .8s linear infinite"></i>Indienen…';}
+  try{
+    await createItem(CONFIG.lijstIds.aanvragen,{
+      Title:nm,AanvraagType:'fiets',School:S.trajecten.map(t=>t.school).join(', '),
+      Maand:S.calMo+1,Jaar:S.calYr,TotalEur:parseFloat(totalEur.toFixed(2)),
+      Status:'ingediend',DataJson:dataJson,
+      Stamboek:f.st||'',IBAN:f.ib||'',Rijksreg:f.rr||'',
+      Email:S.user.email,
+    });
+    notify('Aanvraag ingediend ✓');
+    S.fAccepted=false;S.fAcceptedDate='';S.biked={};S.leave={};
+    S.fStep=0;renderLkFormulier();
+  }catch(e){warnMsg('Indienen mislukt: '+e.message);}
+}
+
+// ── OV & PARKEER ──
+function renderOvFormulier(step=0){
+  const now=new Date();
+  if(step===0){
+    // Gegevens stap
+    const f=S.fForm||{};
+    const steps=['Gegevens','Invoer','Overzicht'];
+    const stepsHtml=steps.map((s,i)=>`<div class="step-t${i===0?' active':''}"><b>${i+1}</b>${s}</div>`).join('');
+    document.getElementById('modContent').innerHTML=`
+      <div class="steps">${stepsHtml}</div>
+      <div class="card">
+        <div class="ct"><div class="ct-l"><i class="ti ti-user"></i>Persoonsgegevens</div></div>
+        <p style="font-size:12px;color:#888;margin-bottom:12px">Automatisch overgenomen uit fietsmodule indien beschikbaar.</p>
+        <div class="fr">
+          <div class="field"><label>Voornaam</label><input id="o_fn" value="${f.fn||''}" placeholder="Voornaam"></div>
+          <div class="field"><label>Naam</label><input id="o_ln" value="${f.ln||''}" placeholder="Naam"></div>
+        </div>
+        <div class="fr">
+          <div class="field"><label>Rijksregisternummer</label><input id="o_rr" value="${f.rr||''}" placeholder="90.01.01-123.45"></div>
+          <div class="field"><label>IBAN</label><input id="o_ib" value="${f.ib||''}" placeholder="BE26 3770..."></div>
+        </div>
+        <div class="field"><label>Adres</label><input id="o_adr" value="${f.adr||''}" placeholder="Straat nr, gemeente"></div>
+      </div>
+      <div class="br"><button class="btn p" onclick="ovStep1()"><i class="ti ti-arrow-right"></i>Volgende</button></div>`;
+  } else if(step===1){
+    renderOvInvoer();
+  } else {
+    renderOvOverzicht();
+  }
+}
+
+function ovStep1(){
+  const f=S.fForm||{};
+  S.fForm={...f,fn:document.getElementById('o_fn')?.value||f.fn||'',ln:document.getElementById('o_ln')?.value||f.ln||'',rr:document.getElementById('o_rr')?.value||f.rr||'',ib:document.getElementById('o_ib')?.value||f.ib||'',adr:document.getElementById('o_adr')?.value||f.adr||''};
+  renderOvFormulier(1);
+}
+
+function renderOvInvoer(){
+  const now=new Date();
+  const steps=['Gegevens','Invoer','Overzicht'];
+  const stepsHtml=steps.map((s,i)=>`<div class="step-t${i<1?' done':i===1?' active':''}"><b>${i+1}</b>${s}</div>`).join('');
+  document.getElementById('modContent').innerHTML=`
+    <div class="steps">${stepsHtml}</div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-bus"></i>Onkosten dienstreizen</div></div>
+      <div class="fr" style="margin-bottom:1rem">
+        <div class="field"><label>Maand</label>
+          <select id="o_maand">${MND.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>Jaar</label>
+          <select id="o_jaar">${[-1,0,1].map(d=>{const y=now.getFullYear()+d;return`<option value="${y}"${d===0?' selected':''}>${y}</option>`;}).join('')}</select>
+        </div>
+      </div>
+      <div class="tbl-section-hdr"><i class="ti ti-parking" style="font-size:15px"></i>Parkeerkosten</div>
+      <table class="drtbl" id="parkTable">
+        <thead><tr><th>Datum</th><th>Reden verplaatsing</th><th>Kostprijs (€)</th><th></th></tr></thead>
+        <tbody id="parkBody"></tbody>
+        <tfoot><tr><td colspan="2" style="padding:8px 6px;color:#888;font-weight:600">Totaal parkeer</td><td id="parkTot" style="padding:8px 6px;font-weight:700;color:var(--at)">€ 0,00</td><td></td></tr></tfoot>
+      </table>
+      <button class="add-btn" onclick="addOvRow('park')"><i class="ti ti-plus"></i>Rij toevoegen</button>
+      <div class="tbl-section-hdr" style="margin-top:16px"><i class="ti ti-train" style="font-size:15px"></i>Openbaar vervoer</div>
+      <table class="drtbl" id="ovTable">
+        <thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th>Kostprijs (€)</th><th></th></tr></thead>
+        <tbody id="ovBody"></tbody>
+        <tfoot><tr><td colspan="3" style="padding:8px 6px;color:#888;font-weight:600">Totaal OV</td><td id="ovTot" style="padding:8px 6px;font-weight:700;color:var(--at)">€ 0,00</td><td></td></tr></tfoot>
+      </table>
+      <button class="add-btn" onclick="addOvRow('ov')"><i class="ti ti-plus"></i>Rij toevoegen</button>
+    </div>
+    <div class="br">
+      <button class="btn" onclick="renderOvFormulier(0)"><i class="ti ti-arrow-left"></i>Terug</button>
+      <button class="btn p" onclick="renderOvFormulier(2)"><i class="ti ti-arrow-right"></i>Overzicht</button>
+    </div>`;
+  addOvRow('park');addOvRow('ov');
+}
+
+function addOvRow(type){
+  const tbody=document.getElementById(type==='park'?'parkBody':'ovBody');if(!tbody)return;
+  const tr=document.createElement('tr');
+  if(type==='park'){tr.innerHTML=`<td><input type="date" oninput="updateOvTotals()"></td><td><input type="text" placeholder="Reden" style="width:100%"></td><td><input type="number" step="0.01" min="0" placeholder="0,00" oninput="updateOvTotals()" style="width:80px"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateOvTotals()"><i class="ti ti-x"></i></button></td>`;}
+  else{tr.innerHTML=`<td><input type="date" oninput="updateOvTotals()"></td><td><input type="text" placeholder="Reden" style="width:100%"></td><td><input type="text" placeholder="Bestemming" style="width:100%"></td><td><input type="number" step="0.01" min="0" placeholder="0,00" oninput="updateOvTotals()" style="width:80px"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateOvTotals()"><i class="ti ti-x"></i></button></td>`;}
+  tbody.appendChild(tr);
+}
+
+function getOvData(){
+  const park=[...document.getElementById('parkBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,kost:parseFloat(r.cells[2]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
+  const ov=[...document.getElementById('ovBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r.cells[2]?.querySelector('input')?.value,kost:parseFloat(r.cells[3]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
+  return{park,ov};
+}
+
+function updateOvTotals(){
+  const{park,ov}=getOvData();
+  const pt=document.getElementById('parkTot');if(pt)pt.textContent=fmtEur(park.reduce((s,r)=>s+r.kost,0));
+  const ot=document.getElementById('ovTot');if(ot)ot.textContent=fmtEur(ov.reduce((s,r)=>s+r.kost,0));
+}
+
+function renderOvOverzicht(){
+  const{park,ov}=getOvData();
+  const pt=park.reduce((s,r)=>s+r.kost,0),ot=ov.reduce((s,r)=>s+r.kost,0),tot=pt+ot;
+  const f=S.fForm||{};const nm=((f.fn||'')+' '+(f.ln||'')).trim();
+  const m=parseInt(document.getElementById('o_maand')?.value)||new Date().getMonth();
+  const y=parseInt(document.getElementById('o_jaar')?.value)||new Date().getFullYear();
+  S.ovCurrent={park,ov,m,y,nm,tot};
+  const steps=['Gegevens','Invoer','Overzicht'];
+  const stepsHtml=steps.map((s,i)=>`<div class="step-t${i<2?' done':' active'}"><b>${i+1}</b>${s}</div>`).join('');
+  const parkRows=park.map(r=>`<tr><td>${r.datum||'—'}</td><td>${r.reden||'—'}</td><td style="text-align:right">${fmtEur(r.kost)}</td></tr>`).join('');
+  const ovRows=ov.map(r=>`<tr><td>${r.datum||'—'}</td><td>${r.reden||'—'}</td><td>${r.bestemming||'—'}</td><td style="text-align:right">${fmtEur(r.kost)}</td></tr>`).join('');
+  document.getElementById('modContent').innerHTML=`
+    <div class="steps">${stepsHtml}</div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-id-badge"></i>Aanvrager</div></div>
+      <table class="st"><tr><td>Naam</td><td>${nm||'—'}</td></tr><tr><td>Rijksregisternummer</td><td>${f.rr||'—'}</td></tr><tr><td>Rekeningnummer</td><td>${f.ib||'—'}</td></tr><tr><td>Maand</td><td>${MND[m]} ${y}</td></tr></table>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-calculator"></i>Overzicht onkosten</div></div>
+      ${park.length?`<div style="font-size:12px;font-weight:700;color:var(--at);margin-bottom:6px">Parkeerkosten</div><table class="straj"><thead><tr><th>Datum</th><th>Reden</th><th style="text-align:right">Kostprijs</th></tr></thead><tbody>${parkRows}<tr class="tot"><td colspan="2">Totaal parkeer</td><td style="text-align:right">${fmtEur(pt)}</td></tr></tbody></table>`:''}
+      ${ov.length?`<div style="font-size:12px;font-weight:700;color:var(--at);margin-bottom:6px;margin-top:12px">Openbaar vervoer</div><table class="straj"><thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th style="text-align:right">Kostprijs</th></tr></thead><tbody>${ovRows}<tr class="tot"><td colspan="3">Totaal OV</td><td style="text-align:right">${fmtEur(ot)}</td></tr></tbody></table>`:''}
+      <div class="tbox"><div class="tl">Totaal te vergoeden</div><div class="ta">${fmtEur(tot)}</div></div>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-writing"></i>Verklaring</div></div>
+      <p class="decl">Voor waar en echt verklaard. De vermelde onkosten zijn effectief gemaakt in het kader van dienstreizen.</p>
+      <div style="margin-top:1rem">
+        <div class="sig${S.oAccepted?' checked':''}" onclick="toggleAccept('o')">
+          <div class="sigl">Aanvaarding</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+            <span style="width:20px;height:20px;border:2px solid #CCC;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:${S.oAccepted?'var(--a2)':'white'};border-color:${S.oAccepted?'var(--a2)':'#CCC'}">${S.oAccepted?'<i class="ti ti-check" style="color:white;font-size:14px"></i>':''}</span>
+            <span style="font-size:13px">Ik bevestig dat deze onkosten correct zijn</span>
+          </div>
+          <div class="sigd">${S.oAcceptedDate||''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="br">
+      <button class="btn" onclick="renderOvFormulier(1)"><i class="ti ti-arrow-left"></i>Terug</button>
+      <button class="btn p" id="btnIndienO" onclick="indienOv()"><i class="ti ti-send"></i>Indienen</button>
+    </div>`;
+}
+
+async function indienOv(){
+  if(!S.oAccepted){warnMsg('Aanvaard eerst de verklaring.');return;}
+  const{park,ov,m,y,nm,tot}=S.ovCurrent;
+  const f=S.fForm||{};
+  const dataJson=JSON.stringify({park,ov,totalPark:park.reduce((s,r)=>s+r.kost,0),totalOv:ov.reduce((s,r)=>s+r.kost,0),aanvaard:S.oAcceptedDate});
+  const btn=document.getElementById('btnIndienO');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader" style="animation:spin .8s linear infinite"></i>Indienen…';}
+  try{
+    await createItem(CONFIG.lijstIds.aanvragen,{
+      Title:nm,AanvraagType:'ov',School:S.user.school||'',Maand:m+1,Jaar:y,
+      TotalEur:parseFloat(tot.toFixed(2)),Status:'ingediend',DataJson:dataJson,
+      Stamboek:f.st||'',IBAN:f.ib||'',Rijksreg:f.rr||'',Email:S.user.email,
+    });
+    notify('Aanvraag ingediend ✓');
+    S.oAccepted=false;S.oAcceptedDate='';
+    renderLkFormulier();
+  }catch(e){warnMsg('Indienen mislukt: '+e.message);}
+}
+
+// ── AUTO ──
+function renderAutoFormulier(step=0){
+  const f=S.fForm||{};
+  const steps=['Gegevens','Ritten','Overzicht'];
+  if(step===0){
+    const stepsHtml=steps.map((s,i)=>`<div class="step-t${i===0?' active':''}"><b>${i+1}</b>${s}</div>`).join('');
+    const now=new Date();
+    document.getElementById('modContent').innerHTML=`
+      <div class="steps">${stepsHtml}</div>
+      <div class="card">
+        <div class="ct"><div class="ct-l"><i class="ti ti-user"></i>Persoonsgegevens &amp; voertuig</div></div>
+        <div class="fr"><div class="field"><label>Voornaam</label><input id="a_fn" value="${f.fn||''}"></div><div class="field"><label>Naam</label><input id="a_ln" value="${f.ln||''}"></div></div>
+        <div class="fr"><div class="field"><label>Rijksregisternummer</label><input id="a_rr" value="${f.rr||''}"></div><div class="field"><label>IBAN</label><input id="a_ib" value="${f.ib||''}"></div></div>
+        <div class="fr"><div class="field"><label>Merk + type voertuig</label><input id="a_vt" value="${S.aVoertuig||''}"></div></div>
+        <div class="fr">
+          <div class="field"><label>Tarief/km (€)</label><input id="a_tr" type="number" step="0.01" value="${CONFIG.tariefAuto}"><div class="hint">Vlaams tarief 2025: €0,43</div></div>
+          <div class="field"><label>Carpooling toeslag/km (€)</label><input id="a_cp" type="number" step="0.01" value="${CONFIG.tariefCarpool}"></div>
+        </div>
+        <div class="fr">
+          <div class="field"><label>Maand</label><select id="a_maand">${MND.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('')}</select></div>
+          <div class="field"><label>Jaar</label><select id="a_jaar">${[-1,0,1].map(d=>{const y=now.getFullYear()+d;return`<option value="${y}"${d===0?' selected':''}>${y}</option>`;}).join('')}</select></div>
+        </div>
+      </div>
+      <div class="br"><button class="btn p" onclick="autoStep1()"><i class="ti ti-arrow-right"></i>Volgende</button></div>`;
+  } else if(step===1){
+    const stepsHtml=steps.map((s,i)=>`<div class="step-t${i<1?' done':i===1?' active':''}"><b>${i+1}</b>${s}</div>`).join('');
+    document.getElementById('modContent').innerHTML=`
+      <div class="steps">${stepsHtml}</div>
+      <div class="card">
+        <div class="ct"><div class="ct-l"><i class="ti ti-car"></i>Dienstreizen eigen voertuig</div></div>
+        <table class="drtbl" id="autoTable">
+          <thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th>km (h+t)</th><th>Carpool?</th><th></th></tr></thead>
+          <tbody id="autoBody"></tbody>
+          <tfoot><tr><td colspan="3" style="padding:7px 6px;color:#888;font-weight:600">Totaal km</td><td id="autoTotKm" colspan="2" style="padding:7px 6px;font-weight:700;color:var(--at)">0,0 km</td><td></td></tr></tfoot>
+        </table>
+        <button class="add-btn" onclick="addAutoRow()"><i class="ti ti-plus"></i>Rit toevoegen</button>
+      </div>
+      <div class="br">
+        <button class="btn" onclick="renderAutoFormulier(0)"><i class="ti ti-arrow-left"></i>Terug</button>
+        <button class="btn p" onclick="buildAutoOverzicht()"><i class="ti ti-arrow-right"></i>Overzicht</button>
+      </div>`;
+    addAutoRow();
+  } else {
+    renderAutoOverzicht();
+  }
+}
+
+function autoStep1(){
+  const f=S.fForm||{};
+  S.fForm={...f,fn:document.getElementById('a_fn')?.value||f.fn||'',ln:document.getElementById('a_ln')?.value||f.ln||'',rr:document.getElementById('a_rr')?.value||f.rr||'',ib:document.getElementById('a_ib')?.value||f.ib||''};
+  S.aVoertuig=document.getElementById('a_vt')?.value||'';
+  S.aTarief=parseFloat(document.getElementById('a_tr')?.value)||CONFIG.tariefAuto;
+  S.aCpTarief=parseFloat(document.getElementById('a_cp')?.value)||0;
+  S.aMaand=parseInt(document.getElementById('a_maand')?.value)||0;
+  S.aJaar=parseInt(document.getElementById('a_jaar')?.value)||new Date().getFullYear();
+  // Voertuigdata ook opslaan in profiel
+  if(S.user)saveProfiel(S.user.email, S.fForm||{});
+  renderAutoFormulier(1);
+}
+
+function addAutoRow(){
+  const tbody=document.getElementById('autoBody');if(!tbody)return;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input type="date"></td><td><input type="text" placeholder="Reden" style="min-width:100px;width:100%"></td><td><input type="text" placeholder="Bestemming" style="min-width:80px;width:100%"></td><td><input type="number" step="0.1" min="0" placeholder="0,0" style="width:70px" oninput="updateAutoTotals()"></td><td style="text-align:center"><input type="checkbox" onchange="updateAutoTotals()" style="width:auto;padding:0" title="Carpooling"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateAutoTotals()"><i class="ti ti-x"></i></button></td>`;
+  tbody.appendChild(tr);
+}
+
+function updateAutoTotals(){
+  let totKm=0;
+  [...document.getElementById('autoBody')?.rows||[]].forEach(r=>{totKm+=parseFloat(r.cells[3]?.querySelector('input')?.value)||0;});
+  const el=document.getElementById('autoTotKm');if(el)el.textContent=totKm.toFixed(1)+' km';
+}
+
+function getAutoRitten(){
+  return[...document.getElementById('autoBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r.cells[2]?.querySelector('input')?.value,km:parseFloat(r.cells[3]?.querySelector('input')?.value)||0,carpool:r.cells[4]?.querySelector('input')?.checked})).filter(r=>r.km>0||r.reden);
+}
+
+function buildAutoOverzicht(){
+  S.autoRitten=getAutoRitten();
+  renderAutoFormulier(2);
+}
+
+function renderAutoOverzicht(){
+  const f=S.fForm||{};const nm=((f.fn||'')+' '+(f.ln||'')).trim();
+  const ritten=S.autoRitten||[];
+  const tarief=S.aTarief||CONFIG.tariefAuto;const cpTarief=S.aCpTarief||0;
+  const grandEur=ritten.reduce((s,r)=>s+r.km*tarief+(r.carpool?r.km*cpTarief:0),0);
+  const totKm=ritten.reduce((s,r)=>s+r.km,0);
+  const steps=['Gegevens','Ritten','Overzicht'];
+  const stepsHtml=steps.map((s,i)=>`<div class="step-t${i<2?' done':' active'}"><b>${i+1}</b>${s}</div>`).join('');
+  const ritRows=ritten.map(r=>{const eur=r.km*tarief+(r.carpool?r.km*cpTarief:0);return`<tr><td>${r.datum||'—'}</td><td>${r.reden||'—'}</td><td>${r.bestemming||'—'}</td><td style="text-align:right">${r.km.toFixed(1)}</td><td style="text-align:center">${r.carpool?'Ja':'Nee'}</td><td style="text-align:right">${fmtEur(eur)}</td></tr>`;}).join('');
+  document.getElementById('modContent').innerHTML=`
+    <div class="steps">${stepsHtml}</div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-id-badge"></i>Aanvrager</div></div>
+      <table class="st"><tr><td>Naam</td><td>${nm||'—'}</td></tr><tr><td>Rijksregisternummer</td><td>${f.rr||'—'}</td></tr><tr><td>Voertuig</td><td>${S.aVoertuig||'—'}</td></tr><tr><td>Tarief</td><td>€ ${tarief.toFixed(2)}/km + carpool € ${cpTarief.toFixed(2)}/km</td></tr><tr><td>Maand</td><td>${MND[S.aMaand||0]} ${S.aJaar||new Date().getFullYear()}</td></tr></table>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-calculator"></i>Berekening</div></div>
+      <table class="straj"><thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th style="text-align:right">km</th><th>Carpool</th><th style="text-align:right">Bedrag</th></tr></thead><tbody>${ritRows}</tbody></table>
+      <div class="tbox"><div class="tl">Totale vergoeding</div><div class="ta">${fmtEur(grandEur)}</div></div>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l"><i class="ti ti-writing"></i>Verklaring</div></div>
+      <p class="decl">Voor waar en echt verklaard. De vermelde verplaatsingen zijn effectief gemaakt in het kader van dienstreizen met het eigen motorvoertuig.</p>
+      <div style="margin-top:1rem">
+        <div class="sig${S.aAccepted?' checked':''}" onclick="toggleAccept('a')">
+          <div class="sigl">Aanvaarding</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+            <span style="width:20px;height:20px;border:2px solid #CCC;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:${S.aAccepted?'var(--a2)':'white'};border-color:${S.aAccepted?'var(--a2)':'#CCC'}">${S.aAccepted?'<i class="ti ti-check" style="color:white;font-size:14px"></i>':''}</span>
+            <span style="font-size:13px">Ik bevestig dat deze verplaatsingen correct zijn</span>
+          </div>
+          <div class="sigd">${S.aAcceptedDate||''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="br">
+      <button class="btn" onclick="renderAutoFormulier(1)"><i class="ti ti-arrow-left"></i>Terug</button>
+      <button class="btn p" id="btnIndienA" onclick="indienAuto()"><i class="ti ti-send"></i>Indienen</button>
+    </div>`;
+}
+
+async function indienAuto(){
+  if(!S.aAccepted){warnMsg('Aanvaard eerst de verklaring.');return;}
+  const f=S.fForm||{};const nm=((f.fn||'')+' '+(f.ln||'')).trim();
+  const ritten=S.autoRitten||[];
+  const tarief=S.aTarief||CONFIG.tariefAuto;const cpTarief=S.aCpTarief||0;
+  const grandEur=ritten.reduce((s,r)=>s+r.km*tarief+(r.carpool?r.km*cpTarief:0),0);
+  const totKm=ritten.reduce((s,r)=>s+r.km,0);
+  const dataJson=JSON.stringify({ritten,tarief,cpTarief,voertuig:S.aVoertuig||'',aanvaard:S.aAcceptedDate});
+  const btn=document.getElementById('btnIndienA');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader" style="animation:spin .8s linear infinite"></i>Indienen…';}
+  try{
+    await createItem(CONFIG.lijstIds.aanvragen,{
+      Title:nm,AanvraagType:'auto',School:S.user.school||'',
+      Maand:(S.aMaand||0)+1,Jaar:S.aJaar||new Date().getFullYear(),
+      TotalEur:parseFloat(grandEur.toFixed(2)),Status:'ingediend',DataJson:dataJson,
+      Stamboek:f.st||'',IBAN:f.ib||'',Rijksreg:f.rr||'',Email:S.user.email,
+    });
+    notify('Aanvraag ingediend ✓');
+    S.aAccepted=false;S.aAcceptedDate='';S.autoRitten=[];
+    renderLkFormulier();
+  }catch(e){warnMsg('Indienen mislukt: '+e.message);}
+}
+
+// ── LEERKRACHT: MIJN AANVRAGEN ──
+function renderLkAanvragen(){
+  const html=S.aanvragen.length===0
+    ?'<div class="empty-state"><i class="ti ti-inbox"></i>Geen aanvragen gevonden</div>'
+    :S.aanvragen.map(a=>avCardHtml(a,'lk')).join('');
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="ct"><div class="ct-l"><i class="ti ti-list"></i>Mijn aanvragen</div><span style="font-size:12px;color:#888">${S.aanvragen.length} aanvraag${S.aanvragen.length!==1?'en':''}</span></div>${html}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AANVRAAG CARD (gedeeld)
+// ═══════════════════════════════════════════════════════════════════
+function avCardHtml(a,ctx){
+  const type=a.AanvraagType||'fiets';
+  const status=a.Status||'ingediend';
+  const maand=MND[(a.Maand-1)||0]+' '+(a.Jaar||'');
+  const statusCls={ingediend:'ind',goedgekeurd:'gdk',verwerkt:'vrw'}[status]||'ind';
+  const cardCls=status==='goedgekeurd'?'gdk':status==='verwerkt'?'vrw':'';
+  let bodyHtml='';
+  try{
+    const d=JSON.parse(a.DataJson||'{}');
+    bodyHtml=`<table class="av-tbl">
+      <tr><td>Naam</td><td>${a.Title||'—'}</td></tr>
+      <tr><td>Stamboeknummer</td><td>${a.Stamboek||'—'}</td></tr>
+      <tr><td>Rijksregisternummer</td><td>${a.Rijksreg||'—'}</td></tr>
+      <tr><td>Rekeningnummer</td><td>${a.IBAN||'—'}</td></tr>
+    </table>`;
+    if(type==='fiets'&&d.traject){
+      const rows=d.traject.map(t=>`<tr><td>${t.school}</td><td>${t.days.length}</td><td>${t.km.toFixed(1)}</td><td style="text-align:right">${fmtEur(t.days.length*t.km*(d.rate||CONFIG.tariefFiets))}</td></tr>`).join('');
+      bodyHtml+=`<table class="av-subtbl"><thead><tr><th>School</th><th>Dagen</th><th>km/dag</th><th style="text-align:right">Bedrag</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    if(type==='ov'){
+      if(d.park&&d.park.length){bodyHtml+=`<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:8px 0 4px">Parkeerkosten</div><table class="av-subtbl"><thead><tr><th>Datum</th><th>Reden</th><th style="text-align:right">Kostprijs</th></tr></thead><tbody>${d.park.map(r=>`<tr><td>${r.datum||'—'}</td><td>${r.reden||'—'}</td><td style="text-align:right">${fmtEur(r.kost)}</td></tr>`).join('')}</tbody></table>`;}
+      if(d.ov&&d.ov.length){bodyHtml+=`<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:8px 0 4px">Openbaar vervoer</div><table class="av-subtbl"><thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th style="text-align:right">Kostprijs</th></tr></thead><tbody>${d.ov.map(r=>`<tr><td>${r.datum||'—'}</td><td>${r.reden||'—'}</td><td>${r.bestemming||'—'}</td><td style="text-align:right">${fmtEur(r.kost)}</td></tr>`).join('')}</tbody></table>`;}
+    }
+    if(type==='auto'&&d.ritten){
+      bodyHtml+=`<table class="av-subtbl"><thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th style="text-align:right">km</th><th>Carpool</th></tr></thead><tbody>${d.ritten.map(r=>`<tr><td>${r.datum||'—'}</td><td>${r.reden||'—'}</td><td>${r.bestemming||'—'}</td><td style="text-align:right">${r.km.toFixed(1)}</td><td>${r.carpool?'Ja':'Nee'}</td></tr>`).join('')}</tbody></table>`;
+    }
+  }catch(e){}
+
+  const dirInfo=status!=='ingediend'?`<div style="font-size:12px;color:#555;margin-top:8px;padding:8px;background:#F8F7F4;border-radius:6px"><i class="ti ti-shield-check" style="font-size:13px;color:var(--a2);vertical-align:-2px"></i> Goedgekeurd door ${a.DirNaam||'directeur'} ${a.DirDatum?'op '+new Date(a.DirDatum).toLocaleDateString('nl-BE'):''}</div>`:''
+  const approveBtn=ctx==='dir'&&status==='ingediend'?`<div class="check-row${S.pendingApprove&&S.pendingApprove[a.id]?' checked':''}" onclick="toggleDirApprove('${a.id}')"><div class="chk${S.pendingApprove&&S.pendingApprove[a.id]?' on':''}">${S.pendingApprove&&S.pendingApprove[a.id]?'<i class="ti ti-check" style="color:white;font-size:14px"></i>':''}</div><div><div style="font-size:13px;color:${S.pendingApprove&&S.pendingApprove[a.id]?'var(--a2)':'#444'};font-weight:${S.pendingApprove&&S.pendingApprove[a.id]?600:400}">Ik keur deze aanvraag goed</div></div></div>
+    <div class="br" style="margin-top:.75rem"><button class="btn pu" onclick="confirmApprove('${a.id}')"><i class="ti ti-shield-check"></i>Goedkeuren &amp; opslaan</button></div>`:''
+  const secBtn=ctx==='sec'&&status==='goedgekeurd'?`<div class="br" style="margin-top:.75rem"><button class="btn or" onclick="markVerwerkt('${a.id}')"><i class="ti ti-check"></i>Markeer als verwerkt</button></div>`:''
+
+  return`<div class="av-card${cardCls?' '+cardCls:''}" id="av-${a.id}">
+    <div class="av-hdr" onclick="toggleAvBody('${a.id}')">
+      <div>
+        <div class="av-naam">${a.Title||'—'} <span class="badge ${type}">${TYPE_LBL[type]||type}</span> <span class="badge ${statusCls}">${STATUS_LBL[status]||status}</span></div>
+        <div class="av-meta">${maand} &nbsp;·&nbsp; ${a.School||'—'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="av-eur">${fmtEur(a.TotalEur)}</div>
+        <i class="ti ti-chevron-down" style="font-size:16px;color:#AAA"></i>
+      </div>
+    </div>
+    <div class="av-body" id="avb-${a.id}">
+      ${bodyHtml}${dirInfo}${approveBtn}${secBtn}
+    </div>
+  </div>`;
+}
+
+function toggleAvBody(id){
+  const el=document.getElementById('avb-'+id);
+  if(el)el.classList.toggle('on');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DIRECTEUR
+// ═══════════════════════════════════════════════════════════════════
+function renderDirTeBeoordelen(){
+  const list=S.aanvragen.filter(a=>a.Status==='ingediend');
+  if(!S.pendingApprove)S.pendingApprove={};
+  const html=list.length===0
+    ?'<div class="empty-state"><i class="ti ti-check"></i>Geen openstaande aanvragen</div>'
+    :list.map(a=>avCardHtml(a,'dir')).join('');
+  document.getElementById('mainContent').innerHTML=`<div class="card"><div class="ct"><div class="ct-l" style="color:var(--a2)"><i class="ti ti-clock" style="color:var(--a2)"></i>Te beoordelen</div><span style="font-size:12px;color:#888">${list.length} aanvraag${list.length!==1?'en':''}</span></div>${html}</div>`;
+}
+
+function renderDirGoedgekeurd(){
+  document.getElementById('mainContent').innerHTML='<div class="card"><div class="ct ct-l" style="color:var(--a2)"><i class="ti ti-shield-check" style="color:var(--a2)"></i>Goedgekeurde aanvragen (zie secretariaat)</div><p style="font-size:13px;color:#888;margin-top:8px">Goedgekeurde aanvragen zijn zichtbaar in het secretariaatsportaal.</p></div>';
+}
+
+function toggleDirApprove(id){
+  if(!S.pendingApprove)S.pendingApprove={};
+  S.pendingApprove[id]=!S.pendingApprove[id];
+  const card=document.getElementById('av-'+id);
+  if(card){
+    const a=S.aanvragen.find(x=>x.id===id);
+    if(a)card.outerHTML=avCardHtml(a,'dir');
+  }
+}
+
+async function confirmApprove(id){
+  const a=S.aanvragen.find(x=>x.id===id);if(!a)return;
+  if(!S.pendingApprove||!S.pendingApprove[id]){warnMsg('Vink eerst de goedkeuring aan.');return;}
+  try{
+    await updateItem(CONFIG.lijstIds.aanvragen,id,{
+      Status:'goedgekeurd',
+      DirNaam:S.user.naam,
+      DirDatum:new Date().toISOString(),
+    });
+    notify(`Aanvraag van ${a.Title} goedgekeurd ✓`);
+    S.pendingApprove[id]=false;
+    await loadAanvragen();
+    renderDirTeBeoordelen();
+  }catch(e){warnMsg('Goedkeuren mislukt: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SECRETARIAAT
+// ═══════════════════════════════════════════════════════════════════
+async function loadSecAanvragen(){
+  // Secretariaat ziet alles (of filter op goedgekeurd)
+  S.aanvragen=await getListItems(CONFIG.lijstIds.aanvragen);
+}
+
+function renderSecAanvragen(){
+  const goedgekeurd=S.aanvragen.filter(a=>a.Status==='goedgekeurd');
+  const verwerkt=S.aanvragen.filter(a=>a.Status==='verwerkt');
+  const html=[...goedgekeurd,...verwerkt].map(a=>avCardHtml(a,'sec')).join('');
+  document.getElementById('mainContent').innerHTML=`
+    <div class="card">
+      <div class="ct"><div class="ct-l" style="color:var(--a3)"><i class="ti ti-inbox" style="color:var(--a3)"></i>Aanvragen</div>
+        <span style="font-size:12px;color:#888">${goedgekeurd.length} goed te keuren &nbsp;·&nbsp; ${verwerkt.length} verwerkt</span>
+      </div>
+      ${html||'<div class="empty-state"><i class="ti ti-inbox"></i>Geen aanvragen beschikbaar</div>'}
+    </div>`;
+}
+
+async function markVerwerkt(id){
+  try{
+    await updateItem(CONFIG.lijstIds.aanvragen,id,{Status:'verwerkt',SecNaam:S.user.naam,SecDatum:new Date().toISOString()});
+    notify('Aanvraag gemarkeerd als verwerkt ✓');
+    if(S.user.rol==='secretariaat')await loadSecAanvragen();
+    else await loadAanvragen();
+    renderSecAanvragen();
+  }catch(e){warnMsg('Bijwerken mislukt: '+e.message);}
+}
+
+function renderSecOverzicht(){
+  const filtered=S.aanvragen.filter(a=>{
+    if(a.Status==='ingediend')return false;
+    if(S.fMaand){const[m,y]=S.fMaand.split('-');if(parseInt(m)!==a.Maand||parseInt(y)!==a.Jaar)return false;}
+    if(S.fType&&a.AanvraagType!==S.fType)return false;
+    return true;
+  });
+
+  const maanden=new Set(S.aanvragen.filter(a=>a.Status!=='ingediend').map(a=>`${a.Maand}-${a.Jaar}`));
+  const maandOpts=[...maanden].sort((a,b)=>{const[m1,y1]=a.split('-');const[m2,y2]=b.split('-');return(+y1-+y2)||(+m1-+m2);}).map(k=>{const[m,y]=k.split('-');return`<option value="${k}"${S.fMaand===k?' selected':''}>${MND[parseInt(m)-1]} ${y}</option>`;}).join('');
+
+  const byType={fiets:[],ov:[],auto:[]};
+  filtered.forEach(a=>byType[a.AanvraagType||'fiets'].push(a));
+  let grandTotal=0;
+  let rows=Object.entries(byType).flatMap(([type,list])=>{
+    if(!list.length)return[];
+    const typeTotal=list.reduce((s,a)=>s+(a.TotalEur||0),0);grandTotal+=typeTotal;
+    return[`<tr class="type-hdr"><td colspan="3">${{fiets:'🚲',ov:'🚌',auto:'🚗'}[type]} ${TYPE_LBL[type]}</td><td class="r">${fmtEur(typeTotal)}</td></tr>`,
+      ...list.sort((a,b)=>(a.Title||'').localeCompare(b.Title||'')).map(a=>`<tr><td>${a.Title||'—'}</td><td>${a.Stamboek||'—'}</td><td style="font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · ${a.School||'—'}<br><span style="font-size:11px">Dir: ${a.DirNaam||'—'}</span></td><td class="r" style="font-weight:600;color:var(--a3)">${fmtEur(a.TotalEur)}</td></tr>`)
+    ];
+  });
+
+  document.getElementById('mainContent').innerHTML=`
+    <div class="card">
+      <div class="ct"><div class="ct-l" style="color:var(--a3)"><i class="ti ti-filter" style="color:var(--a3)"></i>Filter</div></div>
+      <div class="filter-row">
+        <div class="field"><label>Maand</label>
+          <select onchange="S.fMaand=this.value;renderSecOverzicht()"><option value="">Alle maanden</option>${maandOpts}</select>
+        </div>
+        <div class="field"><label>Type</label>
+          <select onchange="S.fType=this.value;renderSecOverzicht()">
+            <option value="">Alle types</option>
+            <option value="fiets"${S.fType==='fiets'?' selected':''}>Fietsvergoeding</option>
+            <option value="ov"${S.fType==='ov'?' selected':''}>OV &amp; Parkeer</option>
+            <option value="auto"${S.fType==='auto'?' selected':''}>Eigen voertuig</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ct-l" style="color:var(--a3)"><i class="ti ti-table" style="color:var(--a3)"></i>Maandoverzicht</div></div>
+      ${filtered.length?`<table class="ovtbl"><thead><tr><th>Naam</th><th>Stamboeknr.</th><th>Details</th><th class="r">Bedrag</th></tr></thead><tbody>${rows.join('')}</tbody></table><div class="tbox-sec"><div class="tl-sec">Totaal te betalen</div><div class="ta-sec">${fmtEur(grandTotal)}</div></div>`:'<div class="empty-state"><i class="ti ti-table"></i>Geen aanvragen voor deze filter</div>'}
+    </div>
+    <div class="br">
+      <button class="btn or" onclick="downloadOverviewPdf()"><i class="ti ti-file-download"></i>Download PDF</button>
+    </div>`;
+}
+
+function renderSecInstellingen(){
+  document.getElementById('mainContent').innerHTML=`
+    <div class="card">
+      <div class="ct"><div class="ct-l" style="color:var(--a3)"><i class="ti ti-settings" style="color:var(--a3)"></i>Instellingen</div></div>
+      <p style="font-size:13px;color:#555">Aangemeld als: <strong>${S.user.email}</strong></p>
+      <p style="font-size:13px;color:#555;margin-top:.5rem">Rol: <strong>${S.user.rol}</strong> &nbsp;·&nbsp; School: <strong>${S.user.school}</strong></p>
+      <p style="font-size:13px;color:#888;margin-top:1rem">Beheer van gebruikers en rollen gaat via SharePoint: <br>Site → Lijst "Gebruikers"</p>
+    </div>`;
+}
+
+// Override refresh voor secretariaat
+const _refresh=refresh;
+window.refresh=async function(){
+  const btn=document.querySelector('.icon-btn[title="Verversen"]');
+  if(btn)btn.querySelector('i').style.animation='spin .8s linear infinite';
+  try{
+    if(S.user.rol==='secretariaat')await loadSecAanvragen();
+    else await loadAanvragen();
+    renderTab();
+  }catch(e){warnMsg('Verversen mislukt: '+e.message);}
+  if(btn)btn.querySelector('i').style.animation='';
+  notify('Bijgewerkt ✓');
+};
+
+// PDF export secretariaat
+async function downloadOverviewPdf(){
+  const filtered=S.aanvragen.filter(a=>{
+    if(a.Status==='ingediend')return false;
+    if(S.fMaand){const[m,y]=S.fMaand.split('-');if(parseInt(m)!==a.Maand||parseInt(y)!==a.Jaar)return false;}
+    if(S.fType&&a.AanvraagType!==S.fType)return false;
+    return true;
+  });
+  if(!filtered.length){warnMsg('Geen aanvragen om te exporteren.');return;}
+  const grandTotal=filtered.reduce((s,a)=>s+(a.TotalEur||0),0);
+  const byType={fiets:[],ov:[],auto:[]};filtered.forEach(a=>byType[a.AanvraagType||'fiets'].push(a));
+  let rows='';
+  Object.entries(byType).forEach(([type,list])=>{
+    if(!list.length)return;
+    const tt=list.reduce((s,a)=>s+(a.TotalEur||0),0);
+    rows+=`<tr style="background:#FEF3E8;font-weight:700"><td colspan="3" style="padding:8px;border-bottom:1px solid #DDD">${{fiets:'🚲',ov:'🚌',auto:'🚗'}[type]} ${TYPE_LBL[type]}</td><td style="text-align:right;padding:8px;border-bottom:1px solid #DDD">${fmtEur(tt)}</td></tr>`;
+    list.forEach(a=>{rows+=`<tr><td style="padding:7px 8px;border-bottom:1px solid #EEE">${a.Title||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;color:#888">${a.Stamboek||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · Dir: ${a.DirNaam||'—'}</td><td style="text-align:right;padding:7px 8px;border-bottom:1px solid #EEE;font-weight:600">${fmtEur(a.TotalEur)}</td></tr>`;});
+  });
+  const htmlStr=`<div style="font-family:Arial,sans-serif;font-size:13px;color:#1A1A18;max-width:700px;padding:10px">
+    <div style="background:#B85000;color:white;border-radius:8px;padding:16px 20px;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Maandoverzicht onkosten — ${CONFIG.campus}</div><div style="font-size:12px;opacity:.8;margin-top:3px">Scholengemeenschap Lonka | Aangemaakt op ${new Date().toLocaleDateString('nl-BE')}</div></div>
+    <table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F5F5F0"><th style="text-align:left;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Naam</th><th style="text-align:left;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Stamboeknr.</th><th style="text-align:left;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Details</th><th style="text-align:right;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Bedrag</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="background:#FEF3E8;font-weight:700"><td colspan="3" style="padding:10px 8px;border-top:2px solid #DDD;color:#7A3200">TOTAAL TE BETALEN</td><td style="text-align:right;padding:10px 8px;border-top:2px solid #DDD;color:#B85000;font-size:16px">${fmtEur(grandTotal)}</td></tr></tfoot></table>
+  </div>`;
+  const mn=S.fMaand?S.fMaand.replace('-','_'):'alles';
+  await html2pdf().from(htmlStr).set({margin:10,filename:`Maandoverzicht_Lonka_${mn}.pdf`,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).save();
+  notify('PDF gedownload ✓');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════════════════
+// Secretariaat moet alle aanvragen laden
+const _origRenderTab=renderTab;
+window.renderTab=function(){
+  if(S.user&&S.user.rol==='secretariaat'&&S.tabIdx===0){
+    loadSecAanvragen().then(()=>{renderSecAanvragen();});return;
+  }
+  _origRenderTab();
+};
+
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
+
+// ── SMART CHIPS: Nominatim adresautocomplete ──────────────────────
+const chipCache = {};
+let chipDebounce = null;
+
+function createChipInput(placeholder, onSelect, existingValue='') {
+  const wrap = document.createElement('div');
+  wrap.className = 'chip-wrap';
+  wrap.style.width = '100%';
+
+  if (existingValue) {
+    wrap.innerHTML = chipSelectedHtml(existingValue);
+    wrap.querySelector('.chip-x')?.addEventListener('click', () => {
+      wrap.innerHTML = '';
+      const inp = createRawInput(placeholder, wrap, onSelect);
+      wrap.appendChild(inp);
+      inp.focus();
+    });
+    return wrap;
+  }
+
+  const inp = createRawInput(placeholder, wrap, onSelect);
+  wrap.appendChild(inp);
+  return wrap;
+}
+
+function chipSelectedHtml(text) {
+  return `<div class="chip-selected"><i class="ti ti-map-pin"></i><span title="${text}">${text}</span><button class="chip-x" title="Wijzigen">✕</button></div>`;
+}
+
+function createRawInput(placeholder, wrap, onSelect) {
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'chip-input';
+  inp.placeholder = placeholder || 'Typ een adres of plaats...';
+  inp.setAttribute('autocomplete', 'off');
+
+  inp.addEventListener('input', () => {
+    clearTimeout(chipDebounce);
+    const q = inp.value.trim();
+    if (q.length < 3) { closeChipDropdown(wrap); return; }
+    chipDebounce = setTimeout(() => fetchAddresses(q, wrap, inp, onSelect), 320);
+  });
+
+  inp.addEventListener('blur', () => {
+    setTimeout(() => closeChipDropdown(wrap), 180);
+  });
+
+  return inp;
+}
+
+function closeChipDropdown(wrap) {
+  wrap.querySelector('.chip-dropdown')?.remove();
+}
+
+async function fetchAddresses(q, wrap, inp, onSelect) {
+  // Show loading
+  closeChipDropdown(wrap);
+  const dd = document.createElement('div');
+  dd.className = 'chip-dropdown';
+  dd.innerHTML = '<div class="chip-loading"><div class="spin" style="width:14px;height:14px;border-width:2px"></div>Zoeken...</div>';
+  wrap.appendChild(dd);
+
+  try {
+    const cacheKey = q.toLowerCase();
+    let results;
+    if (chipCache[cacheKey]) {
+      results = chipCache[cacheKey];
+    } else {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=be,nl,lu&format=json&limit=6&addressdetails=1`;
+      const resp = await fetch(url, { headers: { 'Accept-Language': 'nl', 'User-Agent': 'LonkaOnkostenApp/1.0' } });
+      results = await resp.json();
+      chipCache[cacheKey] = results;
+    }
+    closeChipDropdown(wrap);
+    if (!results.length) {
+      const dd2 = document.createElement('div');
+      dd2.className = 'chip-dropdown';
+      dd2.innerHTML = '<div class="chip-empty">Geen resultaten gevonden</div>';
+      wrap.appendChild(dd2);
+      return;
+    }
+    const dd2 = document.createElement('div');
+    dd2.className = 'chip-dropdown';
+    results.forEach(r => {
+      const addr = r.address || {};
+      const main = addr.road ? (addr.road + (addr.house_number ? ' ' + addr.house_number : '')) : (r.name || r.display_name.split(',')[0]);
+      const city = addr.city || addr.town || addr.village || addr.municipality || '';
+      const postcode = addr.postcode || '';
+      const sub = [postcode, city].filter(Boolean).join(' ');
+      const full = [main, sub, addr.country].filter(Boolean).join(', ');
+
+      const item = document.createElement('div');
+      item.className = 'chip-item';
+      item.innerHTML = `<i class="ti ti-map-pin"></i><div><div class="chip-item-main">${main}</div>${sub?`<div class="chip-item-sub">${sub}</div>`:''}</div>`;
+      item.addEventListener('mousedown', e => {
+        e.preventDefault();
+        const label = sub ? main + ', ' + sub : main;
+        // Replace input with chip
+        wrap.innerHTML = chipSelectedHtml(label);
+        wrap.querySelector('.chip-x')?.addEventListener('click', () => {
+          wrap.innerHTML = '';
+          const ni = createRawInput(inp.placeholder, wrap, onSelect);
+          wrap.appendChild(ni);
+          ni.focus();
+          onSelect('');
+        });
+        onSelect(label);
+      });
+      dd2.appendChild(item);
+    });
+    // Also allow free-text entry as chip
+    const freeItem = document.createElement('div');
+    freeItem.className = 'chip-item';
+    freeItem.innerHTML = `<i class="ti ti-pencil"></i><div><div class="chip-item-main">Gebruik "${q}" als bestemming</div><div class="chip-item-sub">Vrije invoer</div></div>`;
+    freeItem.addEventListener('mousedown', e => {
+      e.preventDefault();
+      wrap.innerHTML = chipSelectedHtml(q);
+      wrap.querySelector('.chip-x')?.addEventListener('click', () => {
+        wrap.innerHTML = '';
+        const ni = createRawInput(inp.placeholder, wrap, onSelect);
+        wrap.appendChild(ni);
+        ni.focus();
+        onSelect('');
+      });
+      onSelect(q);
+    });
+    dd2.appendChild(freeItem);
+    wrap.appendChild(dd2);
+  } catch(e) {
+    closeChipDropdown(wrap);
+  }
+}
+
+// Patch addOvRow and addAutoRow to use chip inputs for bestemming
+const _origAddAutoRow = addAutoRow;
+window.addAutoRow = function() {
+  const tbody = document.getElementById('autoBody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="date"></td><td><input type="text" placeholder="Reden" style="min-width:100px;width:100%"></td><td class="chip-td"></td><td><input type="number" step="0.1" min="0" placeholder="0,0" style="width:70px" oninput="updateAutoTotals()"></td><td style="text-align:center"><input type="checkbox" onchange="updateAutoTotals()" style="width:auto;padding:0" title="Carpooling"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateAutoTotals()"><i class="ti ti-x"></i></button></td>`;
+  tbody.appendChild(tr);
+  let chipVal = '';
+  const chipWrap = createChipInput('Bestemming...', val => { chipVal = val; }, '');
+  tr.querySelector('.chip-td').appendChild(chipWrap);
+  // Override getAutoRitten to also read chip values
+  tr._getChipVal = () => chipVal;
+};
+
+// Override getAutoRitten to read chip values
+const _origGetAutoRitten = getAutoRitten;
+window.getAutoRitten = function() {
+  return [...document.getElementById('autoBody')?.rows||[]].map(r => ({
+    datum: r.cells[0]?.querySelector('input')?.value,
+    reden: r.cells[1]?.querySelector('input')?.value,
+    bestemming: r._getChipVal ? r._getChipVal() : (r.cells[2]?.querySelector('input')?.value || ''),
+    km: parseFloat(r.cells[3]?.querySelector('input')?.value) || 0,
+    carpool: r.cells[4]?.querySelector('input')?.checked
+  })).filter(r => r.km > 0 || r.reden);
+};
+
+// Patch addOvRow for OV bestemming chip
+const _origAddOvRow = addOvRow;
+window.addOvRow = function(type) {
+  if (type === 'park') { _origAddOvRow(type); return; }
+  const tbody = document.getElementById('ovBody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="date" oninput="updateOvTotals()"></td><td><input type="text" placeholder="Reden" style="width:100%"></td><td class="chip-td"></td><td><input type="number" step="0.01" min="0" placeholder="0,00" oninput="updateOvTotals()" style="width:80px"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateOvTotals()"><i class="ti ti-x"></i></button></td>`;
+  tbody.appendChild(tr);
+  let chipVal = '';
+  const chipWrap = createChipInput('Bestemming...', val => { chipVal = val; }, '');
+  tr.querySelector('.chip-td').appendChild(chipWrap);
+  tr._getChipVal = () => chipVal;
+};
+
+// Override getOvData to read chip values
+const _origGetOvData = getOvData;
+window.getOvData = function() {
+  const park = [...document.getElementById('parkBody')?.rows||[]].map(r => ({
+    datum: r.cells[0]?.querySelector('input')?.value,
+    reden: r.cells[1]?.querySelector('input')?.value,
+    kost: parseFloat(r.cells[2]?.querySelector('input')?.value) || 0
+  })).filter(r => r.kost > 0 || r.reden);
+  const ov = [...document.getElementById('ovBody')?.rows||[]].map(r => ({
+    datum: r.cells[0]?.querySelector('input')?.value,
+    reden: r.cells[1]?.querySelector('input')?.value,
+    bestemming: r._getChipVal ? r._getChipVal() : (r.cells[2]?.querySelector('input')?.value || ''),
+    kost: parseFloat(r.cells[3]?.querySelector('input')?.value) || 0
+  })).filter(r => r.kost > 0 || r.reden);
+  return { park, ov };
+};
+
+</script>
+</body>
+</html>
