@@ -1026,7 +1026,7 @@ function addOvRow(type){
 
 function getOvData(){
   const park=[...document.getElementById('parkBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,kost:parseFloat(r.cells[2]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
-  const ov=[...document.getElementById('ovBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r.cells[2]?.querySelector('input')?.value,kost:parseFloat(r.cells[3]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
+  const ov=[...document.getElementById('ovBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r._getChipVal?r._getChipVal():'',kost:parseFloat(r.cells[3]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
   return{park,ov};
 }
 
@@ -1161,8 +1161,12 @@ function autoStep1(){
 function addAutoRow(){
   const tbody=document.getElementById('autoBody');if(!tbody)return;
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td><input type="date"></td><td><input type="text" placeholder="Reden" style="min-width:100px;width:100%"></td><td><input type="text" placeholder="Bestemming" style="min-width:80px;width:100%"></td><td><input type="number" step="0.1" min="0" placeholder="0,0" style="width:70px" oninput="updateAutoTotals()"></td><td style="text-align:center"><input type="checkbox" onchange="updateAutoTotals()" style="width:auto;padding:0" title="Carpooling"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateAutoTotals()"><i class="ti ti-x"></i></button></td>`;
+  tr.innerHTML=`<td><input type="date"></td><td><input type="text" placeholder="Reden" style="min-width:100px;width:100%"></td><td class="chip-td" style="min-width:140px"></td><td><input type="number" step="0.1" min="0" placeholder="0,0" style="width:70px" oninput="updateAutoTotals()"></td><td style="text-align:center"><input type="checkbox" onchange="updateAutoTotals()" style="width:auto;padding:0" title="Carpooling"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateAutoTotals()"><i class="ti ti-x"></i></button></td>`;
   tbody.appendChild(tr);
+  let chipVal='';
+  const chipWrap=createChipInput('Bestemming...',val=>{chipVal=val;},'');
+  tr.querySelector('.chip-td').appendChild(chipWrap);
+  tr._getChipVal=()=>chipVal;
 }
 
 function updateAutoTotals(){
@@ -1172,7 +1176,7 @@ function updateAutoTotals(){
 }
 
 function getAutoRitten(){
-  return[...document.getElementById('autoBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r.cells[2]?.querySelector('input')?.value,km:parseFloat(r.cells[3]?.querySelector('input')?.value)||0,carpool:r.cells[4]?.querySelector('input')?.checked})).filter(r=>r.km>0||r.reden);
+  return[...document.getElementById('autoBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r._getChipVal?r._getChipVal():'',km:parseFloat(r.cells[3]?.querySelector('input')?.value)||0,carpool:r.cells[4]?.querySelector('input')?.checked})).filter(r=>r.km>0||r.reden);
 }
 
 function buildAutoOverzicht(){
@@ -1629,63 +1633,6 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
   }
 }
 
-// Patch addOvRow and addAutoRow to use chip inputs for bestemming
-const _origAddAutoRow = addAutoRow;
-window.addAutoRow = function() {
-  const tbody = document.getElementById('autoBody');
-  if (!tbody) return;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td><input type="date"></td><td><input type="text" placeholder="Reden" style="min-width:100px;width:100%"></td><td class="chip-td"></td><td><input type="number" step="0.1" min="0" placeholder="0,0" style="width:70px" oninput="updateAutoTotals()"></td><td style="text-align:center"><input type="checkbox" onchange="updateAutoTotals()" style="width:auto;padding:0" title="Carpooling"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateAutoTotals()"><i class="ti ti-x"></i></button></td>`;
-  tbody.appendChild(tr);
-  let chipVal = '';
-  const chipWrap = createChipInput('Bestemming...', val => { chipVal = val; }, '');
-  tr.querySelector('.chip-td').appendChild(chipWrap);
-  // Override getAutoRitten to also read chip values
-  tr._getChipVal = () => chipVal;
-};
-
-// Override getAutoRitten to read chip values
-const _origGetAutoRitten = getAutoRitten;
-window.getAutoRitten = function() {
-  return [...document.getElementById('autoBody')?.rows||[]].map(r => ({
-    datum: r.cells[0]?.querySelector('input')?.value,
-    reden: r.cells[1]?.querySelector('input')?.value,
-    bestemming: r._getChipVal ? r._getChipVal() : (r.cells[2]?.querySelector('input')?.value || ''),
-    km: parseFloat(r.cells[3]?.querySelector('input')?.value) || 0,
-    carpool: r.cells[4]?.querySelector('input')?.checked
-  })).filter(r => r.km > 0 || r.reden);
-};
-
-// Patch addOvRow for OV bestemming chip
-const _origAddOvRow = addOvRow;
-window.addOvRow = function(type) {
-  if (type === 'park') { _origAddOvRow(type); return; }
-  const tbody = document.getElementById('ovBody');
-  if (!tbody) return;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td><input type="date" oninput="updateOvTotals()"></td><td><input type="text" placeholder="Reden" style="width:100%"></td><td class="chip-td"></td><td><input type="number" step="0.01" min="0" placeholder="0,00" oninput="updateOvTotals()" style="width:80px"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateOvTotals()"><i class="ti ti-x"></i></button></td>`;
-  tbody.appendChild(tr);
-  let chipVal = '';
-  const chipWrap = createChipInput('Bestemming...', val => { chipVal = val; }, '');
-  tr.querySelector('.chip-td').appendChild(chipWrap);
-  tr._getChipVal = () => chipVal;
-};
-
-// Override getOvData to read chip values
-const _origGetOvData = getOvData;
-window.getOvData = function() {
-  const park = [...document.getElementById('parkBody')?.rows||[]].map(r => ({
-    datum: r.cells[0]?.querySelector('input')?.value,
-    reden: r.cells[1]?.querySelector('input')?.value,
-    kost: parseFloat(r.cells[2]?.querySelector('input')?.value) || 0
-  })).filter(r => r.kost > 0 || r.reden);
-  const ov = [...document.getElementById('ovBody')?.rows||[]].map(r => ({
-    datum: r.cells[0]?.querySelector('input')?.value,
-    reden: r.cells[1]?.querySelector('input')?.value,
-    bestemming: r._getChipVal ? r._getChipVal() : (r.cells[2]?.querySelector('input')?.value || ''),
-    kost: parseFloat(r.cells[3]?.querySelector('input')?.value) || 0
-  })).filter(r => r.kost > 0 || r.reden);
-  return { park, ov };
 };
 
 </script>
