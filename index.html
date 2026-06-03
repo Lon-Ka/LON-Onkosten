@@ -279,11 +279,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 const CONFIG = {
   clientId:    'e519feab-055a-4cea-9a8d-31220fae44f8',
   tenantId:    '655d15e1-e5fc-4868-8462-8463dc0ff014',
-  siteId:      'londerwijs.sharepoint.com,72bf5458-143a-4966-913b-693a9b2ffb83,4d5ecb10-38f0-422f-b892-af256a5da6fc',
+  siteId:      'londerwijs.sharepoint.com,480a9c62-8033-4d46-89fb-0e285a001d8e,4d5ecb10-38f0-422f-b892-af256a5da6fc',
   lijstIds: {
-    profielen:  'GUID_PROFIELEN',    // Nieuwe lijst — zie installatiegids
-    aanvragen:  '2e2f50d4-2ee2-4dbe-b216-6279501b39ed',
-    gebruikers: '708a4841-b1d4-4617-9dfe-c3063fd91719',
+    profielen:  'f7a483ee-7206-4e07-aea1-e329d4b37a1b',    // Nieuwe lijst — zie installatiegids
+    aanvragen:  'cfabfe69-5926-496d-9b2f-adc283e99e21',
+    gebruikers: '02988043-9345-4865-bcbb-9067a63463ac',
   },
   redirectUri:  'https://lon-ka.github.io/LON-Onkosten/',
   campus:       'Londerzeel',
@@ -1563,9 +1563,9 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
     if (chipCache[cacheKey]) {
       results = chipCache[cacheKey];
     } else {
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=be,nl,lu&format=json&limit=6&addressdetails=1`;
-      const resp = await fetch(url, { headers: { 'Accept-Language': 'nl', 'User-Agent': 'LonkaOnkostenApp/1.0' } });
-      results = await resp.json();
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=nl&limit=6&bbox=2.5,49.5,6.5,51.5`;
+      const resp = await fetch(url);
+      results = (await resp.json()).features || [];
       chipCache[cacheKey] = results;
     }
     closeChipDropdown(wrap);
@@ -1579,19 +1579,20 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
     const dd2 = document.createElement('div');
     dd2.className = 'chip-dropdown';
     results.forEach(r => {
-      const addr = r.address || {};
-      const main = addr.road ? (addr.road + (addr.house_number ? ' ' + addr.house_number : '')) : (r.name || r.display_name.split(',')[0]);
-      const city = addr.city || addr.town || addr.village || addr.municipality || '';
-      const postcode = addr.postcode || '';
+      const p = r.properties || {};
+      const street = p.street || p.name || '';
+      const num = p.housenumber || '';
+      const main = (street + (num ? ' ' + num : '')).trim();
+      const city = p.city || p.town || p.village || p.municipality || '';
+      const postcode = p.postcode || '';
       const sub = [postcode, city].filter(Boolean).join(' ');
-      const full = [main, sub, addr.country].filter(Boolean).join(', ');
 
       const item = document.createElement('div');
       item.className = 'chip-item';
       item.innerHTML = `<i class="ti ti-map-pin"></i><div><div class="chip-item-main">${main}</div>${sub?`<div class="chip-item-sub">${sub}</div>`:''}</div>`;
       item.addEventListener('mousedown', e => {
         e.preventDefault();
-        const label = sub ? main + ', ' + sub : main;
+        const label = [main, sub].filter(Boolean).join(', ');
         // Replace input with chip
         wrap.innerHTML = chipSelectedHtml(label);
         wrap.querySelector('.chip-x')?.addEventListener('click', () => {
