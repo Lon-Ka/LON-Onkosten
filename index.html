@@ -1554,32 +1554,24 @@ function closeChipDropdown(wrap) {
 }
 
 async function fetchAddresses(q, wrap, inp, onSelect) {
-  // Show loading
   closeChipDropdown(wrap);
   const dd = document.createElement('div');
   dd.className = 'chip-dropdown';
   dd.innerHTML = '<div class="chip-loading"><div class="spin" style="width:14px;height:14px;border-width:2px"></div>Zoeken...</div>';
   wrap.appendChild(dd);
-
   try {
     const cacheKey = q.toLowerCase();
     let results;
     if (chipCache[cacheKey]) {
       results = chipCache[cacheKey];
     } else {
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=nl&limit=6&bbox=2.5,49.5,6.5,51.5`;
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=nl&limit=6&lat=50.85&lon=4.35&zoom=12`;
       const resp = await fetch(url);
       results = (await resp.json()).features || [];
       chipCache[cacheKey] = results;
     }
     closeChipDropdown(wrap);
-    if (!results.length) {
-      const dd2 = document.createElement('div');
-      dd2.className = 'chip-dropdown';
-      dd2.innerHTML = '<div class="chip-empty">Geen resultaten gevonden</div>';
-      wrap.appendChild(dd2);
-      return;
-    }
+    if (!results.length) return;
     const dd2 = document.createElement('div');
     dd2.className = 'chip-dropdown';
     results.forEach(r => {
@@ -1590,14 +1582,12 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
       const city = p.city || p.town || p.village || p.municipality || '';
       const postcode = p.postcode || '';
       const sub = [postcode, city].filter(Boolean).join(' ');
-
       const item = document.createElement('div');
       item.className = 'chip-item';
       item.innerHTML = `<i class="ti ti-map-pin"></i><div><div class="chip-item-main">${main}</div>${sub?`<div class="chip-item-sub">${sub}</div>`:''}</div>`;
       item.addEventListener('mousedown', e => {
         e.preventDefault();
-        const label = [main, sub].filter(Boolean).join(', ');
-        // Replace input with chip
+        const label = [main, sub].filter(Boolean).join(', ') || p.name || q;
         wrap.innerHTML = chipSelectedHtml(label);
         wrap.querySelector('.chip-x')?.addEventListener('click', () => {
           wrap.innerHTML = '';
@@ -1610,23 +1600,6 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
       });
       dd2.appendChild(item);
     });
-    // Also allow free-text entry as chip
-    const freeItem = document.createElement('div');
-    freeItem.className = 'chip-item';
-    freeItem.innerHTML = `<i class="ti ti-pencil"></i><div><div class="chip-item-main">Gebruik "${q}" als bestemming</div><div class="chip-item-sub">Vrije invoer</div></div>`;
-    freeItem.addEventListener('mousedown', e => {
-      e.preventDefault();
-      wrap.innerHTML = chipSelectedHtml(q);
-      wrap.querySelector('.chip-x')?.addEventListener('click', () => {
-        wrap.innerHTML = '';
-        const ni = createRawInput(inp.placeholder, wrap, onSelect);
-        wrap.appendChild(ni);
-        ni.focus();
-        onSelect('');
-      });
-      onSelect(q);
-    });
-    dd2.appendChild(freeItem);
     wrap.appendChild(dd2);
   } catch(e) {
     closeChipDropdown(wrap);
