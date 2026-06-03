@@ -1565,7 +1565,7 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
     if (chipCache[cacheKey]) {
       results = chipCache[cacheKey];
     } else {
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=nl&limit=6&lat=50.85&lon=4.35&zoom=12`;
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=nl&limit=6&lat=50.85&lon=4.35`;
       const resp = await fetch(url);
       results = (await resp.json()).features || [];
       chipCache[cacheKey] = results;
