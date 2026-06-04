@@ -789,8 +789,14 @@ function buildCal(){
     const div=document.createElement('div');div.className=cls;div.textContent=d;
     if(isFD)div.title='Feestdag';else if(isVak)div.title='Vakantie';else if(isLeave)div.title='Verlof';else if(isConflict)div.title='Reeds bij ander traject';
     if(!isWE){
-      if(S.calMode==='fiets'&&!isFD&&!isVak&&!isLeave&&!isConflict)div.onclick=()=>toggleBiked(d);
-      else if(S.calMode==='verlof'&&!isFD&&!isVak)div.onclick=()=>toggleLeave(d);
+      if(S.calMode==='fiets'&&!isFD&&!isVak&&!isConflict){
+        if(isLeave){
+          // Verlofdag in fietsmode: klik converteert verlof naar gefietst
+          div.onclick=()=>convertVerlofToBiked(d);
+        } else {
+          div.onclick=()=>toggleBiked(d);
+        }
+      } else if(S.calMode==='verlof'&&!isFD&&!isVak) div.onclick=()=>toggleLeave(d);
     }
     el.appendChild(div);
   }
@@ -991,7 +997,7 @@ function renderOvInvoer(){
           <select id="o_maand">${MND.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('')}</select>
         </div>
         <div class="field"><label>Jaar</label>
-          <select id="o_jaar">${[-1,0,1].map(d=>{const y=now.getFullYear()+d;return`<option value="${y}"${d===0?' selected':''}>${y}</option>`;}).join('')}</select>
+          <select id="o_jaar">${Array.from({length:6},(_,i)=>now.getFullYear()+i).map(y=>`<option value="${y}"${i===0?' selected':''}>${y}</option>`).join('')}</select>
         </div>
       </div>
       <div class="tbl-section-hdr"><i class="ti ti-parking" style="font-size:15px"></i>Parkeerkosten</div>
@@ -1118,7 +1124,7 @@ function renderAutoFormulier(step=0){
         </div>
         <div class="fr">
           <div class="field"><label>Maand</label><select id="a_maand">${MND.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('')}</select></div>
-          <div class="field"><label>Jaar</label><select id="a_jaar">${[-1,0,1].map(d=>{const y=now.getFullYear()+d;return`<option value="${y}"${d===0?' selected':''}>${y}</option>`;}).join('')}</select></div>
+          <div class="field"><label>Jaar</label><select id="a_jaar">${Array.from({length:6},(_,i)=>now.getFullYear()+i).map(y=>`<option value="${y}"${i===0?' selected':''}>${y}</option>`).join('')}</select></div>
         </div>
       </div>
       <div class="br"><button class="btn p" onclick="autoStep1()"><i class="ti ti-arrow-right"></i>Volgende</button></div>`;
@@ -1128,8 +1134,8 @@ function renderAutoFormulier(step=0){
       <div class="steps">${stepsHtml}</div>
       <div class="card">
         <div class="ct"><div class="ct-l"><i class="ti ti-car"></i>Dienstreizen eigen voertuig</div></div>
-        <table class="drtbl" id="autoTable">
-          <thead><tr><th>Datum</th><th>Reden</th><th>Bestemming</th><th>km (h+t)</th><th>Carpool?</th><th></th></tr></thead>
+        <div style="overflow-x:auto"><table class="drtbl" id="autoTable" style="min-width:620px">
+          <thead><tr><th style='min-width:120px'>Datum</th><th style='min-width:130px'>Reden</th><th style='min-width:160px'>Bestemming</th><th style='min-width:80px'>km (h+t)</th><th style='min-width:70px'>Carpool?</th><th style='width:32px'></th></tr></thead>
           <tbody id="autoBody"></tbody>
           <tfoot><tr><td colspan="3" style="padding:7px 6px;color:#888;font-weight:600">Totaal km</td><td id="autoTotKm" colspan="2" style="padding:7px 6px;font-weight:700;color:var(--at)">0,0 km</td><td></td></tr></tfoot>
         </table>
@@ -1163,8 +1169,23 @@ function addAutoRow(){
   const tr=document.createElement('tr');
   tr.innerHTML=`<td><input type="date"></td><td><input type="text" placeholder="Reden" style="min-width:100px;width:100%"></td><td class="chip-td" style="min-width:140px"></td><td><input type="number" step="0.1" min="0" placeholder="0,0" style="width:70px" oninput="updateAutoTotals()"></td><td style="text-align:center"><input type="checkbox" onchange="updateAutoTotals()" style="width:auto;padding:0" title="Carpooling"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateAutoTotals()"><i class="ti ti-x"></i></button></td>`;
   tbody.appendChild(tr);
-  let chipVal='';
-  const chipWrap=createChipInput('Bestemming...',val=>{chipVal=val;},'');
+  let chipVal='',chipCoords=null;
+  const chipWrap=createChipInput('Bestemming...',async(val,coords)=>{
+    chipVal=val;
+    chipCoords=coords||null;
+    // Auto-bereken km als thuisadres bekend is
+    const kmInput=tr.cells[3]?.querySelector('input');
+    if(kmInput&&coords&&S.fForm?.adr){
+      const home=await geocodeAdres(S.fForm.adr);
+      if(home){
+        const dist=haversineKm(coords[1],coords[0],home[1],home[0]);
+        const kmHT=Math.round(dist*2*10)/10; // heen+terug, afgerond op 0.1
+        kmInput.value=kmHT;
+        updateAutoTotals();
+        notify(`Afstand automatisch berekend: ${kmHT} km (hemelsbreed h+t)`);
+      }
+    }
+  },'');
   tr.querySelector('.chip-td').appendChild(chipWrap);
   tr._getChipVal=()=>chipVal;
 }
@@ -1499,6 +1520,23 @@ window.renderTab=function(){
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
 
+
+// ── Haversine afstandsberekening ──────────────────────────────────
+function haversineKm(lat1,lon1,lat2,lon2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+async function geocodeAdres(adres){
+  try{
+    const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(adres)}&limit=1&lat=50.85&lon=4.35`);
+    const j=await r.json();
+    const f=(j.features||[])[0];
+    if(f)return f.geometry.coordinates; // [lon,lat]
+  }catch(e){}
+  return null;
+}
 // ── SMART CHIPS: Nominatim adresautocomplete ──────────────────────
 const chipCache = {};
 let chipDebounce = null;
@@ -1596,7 +1634,7 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
           ni.focus();
           onSelect('');
         });
-        onSelect(label);
+        onSelect(label, r.geometry?.coordinates||null);
       });
       dd2.appendChild(item);
     });
