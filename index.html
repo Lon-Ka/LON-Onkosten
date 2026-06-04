@@ -411,6 +411,17 @@ async function loadProfiel(email){
       S.aVoertuig = item.Voertuig||'';
       S.aTarief   = parseFloat(item.ATarief)||CONFIG.tariefAuto;
       S.aCpTarief = parseFloat(item.ACpTarief)||CONFIG.tariefCarpool;
+      // Herstel trajecten
+      if(item.Trajecten){
+        try{
+          const traj=JSON.parse(item.Trajecten);
+          if(Array.isArray(traj)&&traj.length){
+            S.trajecten=traj;
+            S.curTrajId=traj[0].id;
+            S.trajCounter=traj.reduce((mx,t)=>Math.max(mx,parseInt(t.id.replace('t',''))||0),0)+1;
+          }
+        }catch(e){}
+      }
     }
   }catch(e){ console.warn('Profiel laden mislukt:', e.message); }
 }
@@ -430,6 +441,7 @@ async function saveProfiel(email, data){
     Voertuig: S.aVoertuig||'',
     ATarief: S.aTarief||CONFIG.tariefAuto,
     ACpTarief: S.aCpTarief||CONFIG.tariefCarpool,
+    Trajecten: S.trajecten&&S.trajecten.length ? JSON.stringify(S.trajecten) : '',
   };
   try{
     if(_profielItemId){
@@ -704,12 +716,14 @@ function addTraj(){
   S.trajecten.push({id,school,km});
   if(!S.curTrajId)S.curTrajId=id;
   hideTrajForm();renderTrajList();
+  if(S.user)saveProfiel(S.user.email,S.fForm||{});
 }
 function removeTraj(id){
   if(S.trajecten.length===1){warnMsg('Minstens één traject vereist.');return;}
   S.trajecten=S.trajecten.filter(t=>t.id!==id);
   if(S.curTrajId===id)S.curTrajId=S.trajecten[0].id;
   renderTrajList();
+  if(S.user)saveProfiel(S.user.email,S.fForm||{});
 }
 
 // ── CALENDAR ──
