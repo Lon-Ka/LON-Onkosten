@@ -91,12 +91,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .cd:hover:not(.empty):not(.we):not(.off){background:var(--al);color:var(--at);border-color:var(--a)}
 .cd.biked{background:var(--a);color:white;font-weight:700}
 .cd.we{opacity:.28;cursor:default;background:none;border:none}
-.cd.off{cursor:default}.cd.fdag{background:#FEF3E8;color:#B85000;border-color:#FDDCB5}
-.cd.vakdag{background:#EEF4FE;color:#2D6CB8;border-color:#C8DAFB}
+.cd.fdag{cursor:default}.cd.fdag{background:#FEF3E8;color:#B85000;border-color:#FDDCB5}
+.cd.vakdag{background:#EEF4FE;color:#2D6CB8;border-color:#C8DAFB;cursor:pointer}
 .cd.verlof{background:#EDE9F8;color:#5B3EAC;border-color:#D6CFF0}
 .cd.empty{background:none;cursor:default;border:none}
 .cd.conflict{background:#FEE2E2;color:#B91C1C;border-color:#FCA5A5;cursor:not-allowed}
-.verlof-mode .cd:hover:not(.empty):not(.we):not(.off){background:#EDE9F8;color:#5B3EAC;border-color:#9B85DC}
+.verlof-mode .cd:hover:not(.empty):not(.we):not(.fdag){background:#EDE9F8;color:#5B3EAC;border-color:#9B85DC}
 .verlof-mode .cd.verlof{background:#5B3EAC;color:white;font-weight:700;border-color:#5B3EAC}
 .leg{display:flex;gap:12px;font-size:11px;color:#777;margin-top:10px;flex-wrap:wrap}
 .li{display:flex;align-items:center;gap:5px}.ld{width:12px;height:12px;border-radius:3px;flex-shrink:0}
@@ -782,21 +782,21 @@ function buildCal(){
     let cls='cd';
     if(isWE)cls+=' we';
     else if(isFD)cls+=' off fdag';
-    else if(isVak)cls+=' off vakdag';
-    else if(isLeave)cls+=' off verlof';
     else if(isBiked)cls+=' biked';
+    else if(isVak)cls+=' vakdag';
+    else if(isLeave)cls+=' off verlof';
     else if(isConflict)cls+=' conflict';
     const div=document.createElement('div');div.className=cls;div.textContent=d;
     if(isFD)div.title='Feestdag';else if(isVak)div.title='Vakantie';else if(isLeave)div.title='Verlof';else if(isConflict)div.title='Reeds bij ander traject';
     if(!isWE){
-      if(S.calMode==='fiets'&&!isFD&&!isVak&&!isConflict){
+      if(S.calMode==='fiets'&&!isFD&&!isConflict){
         if(isLeave){
-          // Verlofdag in fietsmode: klik converteert verlof naar gefietst
           div.onclick=()=>convertVerlofToBiked(d);
         } else {
+          // Werkdag of vakantiedag: toggle gefietst (leerkracht kan ook tijdens vakantie fietsen)
           div.onclick=()=>toggleBiked(d);
         }
-      } else if(S.calMode==='verlof'&&!isFD&&!isVak) div.onclick=()=>toggleLeave(d);
+      } else if(S.calMode==='verlof'&&!isFD) div.onclick=()=>toggleLeave(d);
     }
     el.appendChild(div);
   }
