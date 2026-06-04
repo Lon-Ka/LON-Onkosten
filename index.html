@@ -997,7 +997,7 @@ function renderOvInvoer(){
           <select id="o_maand">${MND.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('')}</select>
         </div>
         <div class="field"><label>Jaar</label>
-          <select id="o_jaar">${Array.from({length:6},(_,i)=>now.getFullYear()+i).map(y=>`<option value="${y}"${i===0?' selected':''}>${y}</option>`).join('')}</select>
+          <select id="o_jaar">${Array.from({length:6},(_,i)=>now.getFullYear()+i).map((y,i)=>`<option value="${y}"${i===0?' selected':''}>${y}</option>`).join('')}</select>
         </div>
       </div>
       <div class="tbl-section-hdr"><i class="ti ti-parking" style="font-size:15px"></i>Parkeerkosten</div>
@@ -1124,7 +1124,7 @@ function renderAutoFormulier(step=0){
         </div>
         <div class="fr">
           <div class="field"><label>Maand</label><select id="a_maand">${MND.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('')}</select></div>
-          <div class="field"><label>Jaar</label><select id="a_jaar">${Array.from({length:6},(_,i)=>now.getFullYear()+i).map(y=>`<option value="${y}"${i===0?' selected':''}>${y}</option>`).join('')}</select></div>
+          <div class="field"><label>Jaar</label><select id="a_jaar">${Array.from({length:6},(_,i)=>now.getFullYear()+i).map((y,i)=>`<option value="${y}"${i===0?' selected':''}>${y}</option>`).join('')}</select></div>
         </div>
       </div>
       <div class="br"><button class="btn p" onclick="autoStep1()"><i class="ti ti-arrow-right"></i>Volgende</button></div>`;
