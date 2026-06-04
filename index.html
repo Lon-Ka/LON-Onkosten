@@ -525,7 +525,7 @@ async function loadAanvragen(){
   if(S.user.rol==='leerkracht'){
     S.aanvragen=alle.filter(a=>(a.Email||'').toLowerCase()===S.user.email);
   } else if(S.user.rol==='directeur'){
-    S.aanvragen=alle.filter(a=>a.Status==='ingediend');
+    S.aanvragen=alle.filter(a=>a.AanvraagStatus==='ingediend');
   } else {
     S.aanvragen=alle;
   }
@@ -937,7 +937,7 @@ async function indienFiets(){
     await createItem(CONFIG.lijstIds.aanvragen,{
       Title:nm,AanvraagType:'fiets',School:S.trajecten.map(t=>t.school).join(', '),
       Maand:S.calMo+1,Jaar:S.calYr,TotalEur:parseFloat(totalEur.toFixed(2)),
-      Status:'ingediend',DataJson:dataJson,
+      AanvraagStatus:'ingediend',DataJson:dataJson,
       Stamboek:f.st||'',IBAN:f.ib||'',Rijksreg:f.rr||'',
       Email:S.user.email,
     });
@@ -1095,7 +1095,7 @@ async function indienOv(){
   try{
     await createItem(CONFIG.lijstIds.aanvragen,{
       Title:nm,AanvraagType:'ov',School:S.user.school||'',Maand:m+1,Jaar:y,
-      TotalEur:parseFloat(tot.toFixed(2)),Status:'ingediend',DataJson:dataJson,
+      TotalEur:parseFloat(tot.toFixed(2)),AanvraagStatus:'ingediend',DataJson:dataJson,
       Stamboek:f.st||'',IBAN:f.ib||'',Rijksreg:f.rr||'',Email:S.user.email,
     });
     notify('Aanvraag ingediend ✓');
@@ -1259,7 +1259,7 @@ async function indienAuto(){
     await createItem(CONFIG.lijstIds.aanvragen,{
       Title:nm,AanvraagType:'auto',School:S.user.school||'',
       Maand:(S.aMaand||0)+1,Jaar:S.aJaar||new Date().getFullYear(),
-      TotalEur:parseFloat(grandEur.toFixed(2)),Status:'ingediend',DataJson:dataJson,
+      TotalEur:parseFloat(grandEur.toFixed(2)),AanvraagStatus:'ingediend',DataJson:dataJson,
       Stamboek:f.st||'',IBAN:f.ib||'',Rijksreg:f.rr||'',Email:S.user.email,
     });
     notify('Aanvraag ingediend ✓');
@@ -1281,7 +1281,7 @@ function renderLkAanvragen(){
 // ═══════════════════════════════════════════════════════════════════
 function avCardHtml(a,ctx){
   const type=a.AanvraagType||'fiets';
-  const status=a.Status||'ingediend';
+  const status=a.AanvraagStatus||'ingediend';
   const maand=MND[(a.Maand-1)||0]+' '+(a.Jaar||'');
   const statusCls={ingediend:'ind',goedgekeurd:'gdk',verwerkt:'vrw'}[status]||'ind';
   const cardCls=status==='goedgekeurd'?'gdk':status==='verwerkt'?'vrw':'';
@@ -1338,7 +1338,7 @@ function toggleAvBody(id){
 // DIRECTEUR
 // ═══════════════════════════════════════════════════════════════════
 function renderDirTeBeoordelen(){
-  const list=S.aanvragen.filter(a=>a.Status==='ingediend');
+  const list=S.aanvragen.filter(a=>a.AanvraagStatus==='ingediend');
   if(!S.pendingApprove)S.pendingApprove={};
   const html=list.length===0
     ?'<div class="empty-state"><i class="ti ti-check"></i>Geen openstaande aanvragen</div>'
@@ -1365,7 +1365,7 @@ async function confirmApprove(id){
   if(!S.pendingApprove||!S.pendingApprove[id]){warnMsg('Vink eerst de goedkeuring aan.');return;}
   try{
     await updateItem(CONFIG.lijstIds.aanvragen,id,{
-      Status:'goedgekeurd',
+      AanvraagStatus:'goedgekeurd',
       DirNaam:S.user.naam,
       DirDatum:new Date().toISOString(),
     });
@@ -1385,8 +1385,8 @@ async function loadSecAanvragen(){
 }
 
 function renderSecAanvragen(){
-  const goedgekeurd=S.aanvragen.filter(a=>a.Status==='goedgekeurd');
-  const verwerkt=S.aanvragen.filter(a=>a.Status==='verwerkt');
+  const goedgekeurd=S.aanvragen.filter(a=>a.AanvraagStatus==='goedgekeurd');
+  const verwerkt=S.aanvragen.filter(a=>a.AanvraagStatus==='verwerkt');
   const html=[...goedgekeurd,...verwerkt].map(a=>avCardHtml(a,'sec')).join('');
   document.getElementById('mainContent').innerHTML=`
     <div class="card">
@@ -1399,7 +1399,7 @@ function renderSecAanvragen(){
 
 async function markVerwerkt(id){
   try{
-    await updateItem(CONFIG.lijstIds.aanvragen,id,{Status:'verwerkt',SecNaam:S.user.naam,SecDatum:new Date().toISOString()});
+    await updateItem(CONFIG.lijstIds.aanvragen,id,{AanvraagStatus:'verwerkt',SecNaam:S.user.naam,SecDatum:new Date().toISOString()});
     notify('Aanvraag gemarkeerd als verwerkt ✓');
     if(S.user.rol==='secretariaat')await loadSecAanvragen();
     else await loadAanvragen();
@@ -1409,13 +1409,13 @@ async function markVerwerkt(id){
 
 function renderSecOverzicht(){
   const filtered=S.aanvragen.filter(a=>{
-    if(a.Status==='ingediend')return false;
+    if(a.AanvraagStatus==='ingediend')return false;
     if(S.fMaand){const[m,y]=S.fMaand.split('-');if(parseInt(m)!==a.Maand||parseInt(y)!==a.Jaar)return false;}
     if(S.fType&&a.AanvraagType!==S.fType)return false;
     return true;
   });
 
-  const maanden=new Set(S.aanvragen.filter(a=>a.Status!=='ingediend').map(a=>`${a.Maand}-${a.Jaar}`));
+  const maanden=new Set(S.aanvragen.filter(a=>a.AanvraagStatus!=='ingediend').map(a=>`${a.Maand}-${a.Jaar}`));
   const maandOpts=[...maanden].sort((a,b)=>{const[m1,y1]=a.split('-');const[m2,y2]=b.split('-');return(+y1-+y2)||(+m1-+m2);}).map(k=>{const[m,y]=k.split('-');return`<option value="${k}"${S.fMaand===k?' selected':''}>${MND[parseInt(m)-1]} ${y}</option>`;}).join('');
 
   const byType={fiets:[],ov:[],auto:[]};
@@ -1482,7 +1482,7 @@ window.refresh=async function(){
 // PDF export secretariaat
 async function downloadOverviewPdf(){
   const filtered=S.aanvragen.filter(a=>{
-    if(a.Status==='ingediend')return false;
+    if(a.AanvraagStatus==='ingediend')return false;
     if(S.fMaand){const[m,y]=S.fMaand.split('-');if(parseInt(m)!==a.Maand||parseInt(y)!==a.Jaar)return false;}
     if(S.fType&&a.AanvraagType!==S.fType)return false;
     return true;
