@@ -362,6 +362,7 @@ const msalApp = new msal.PublicClientApplication({
 const SCOPES=['User.Read','Sites.ReadWrite.All'];
 
 async function getToken(){
+  if(window._portalToken && !msalApp.getAllAccounts().length){return window._portalToken;}
   const accounts=msalApp.getAllAccounts();
   if(!accounts.length)return null;
   try{
@@ -532,7 +533,30 @@ async function boot(){
     await msalApp.initialize();
     const r=await msalApp.handleRedirectPromise();
     const accounts=msalApp.getAllAccounts();
-    if(!accounts.length){showView('login');return;}
+    if(!accounts.length){
+      if(window.self !== window.top){
+        // Wacht op portaal token
+        if(window._portalToken){
+          // Gebruik portal token — getToken() pikt dit op
+          const tkn=await getToken();
+          const me=await fetch('https://graph.microsoft.com/v1.0/me',{headers:{'Authorization':'Bearer '+tkn}}).then(r=>r.json());
+          const email=(me.mail||me.userPrincipalName||'').toLowerCase();
+          S.displayNaam=me.displayName||email; S.email=email;
+          const alleG=await getListItems(CONFIG.lijstIds.gebruikers);
+          const gebruikers=alleG.filter(u=>(u.Title||'').toLowerCase()===email);
+          if(!gebruikers.length){showError(`Account (${email}) niet geconfigureerd.`);return;}
+          if(gebruikers.length>1){showRolKiezer(gebruikers,me);return;}
+          activeerRol(gebruikers[0],me); window._appBooted=true; return;
+        }
+        await new Promise(r=>setTimeout(r,2000));
+        if(window._portalToken){
+          boot(); return;
+        }
+        showError('Geen actieve sessie. Meld aan via het MijnDigiLoket portaal.');
+        return;
+      }
+      showView('login');return;
+    }
 
     // Huidige gebruiker ophalen
     const token=await getToken();
