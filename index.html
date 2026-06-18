@@ -357,7 +357,7 @@ let S={
 // ═══════════════════════════════════════════════════════════════════
 const msalApp = new msal.PublicClientApplication({
   auth:{ clientId:CONFIG.clientId, authority:`https://login.microsoftonline.com/${CONFIG.tenantId}`, redirectUri:CONFIG.redirectUri },
-  cache:{ cacheLocation:'sessionStorage', storeAuthStateInCookie:false },
+  cache:{ cacheLocation:'localStorage', storeAuthStateInCookie:false },
 });
 const SCOPES=['User.Read','Sites.ReadWrite.All'];
 
