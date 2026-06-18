@@ -374,6 +374,10 @@ async function getToken(){
   }
 }
 async function login(){
+  if(window.self !== window.top){
+    showError('Sessie verlopen. Sluit dit venster en meld opnieuw aan via het portaal.');
+    return;
+  }
   try{
     await msalApp.loginRedirect({scopes:SCOPES});
   }catch(e){showError('Aanmelden mislukt: '+e.message);}
