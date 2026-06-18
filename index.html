@@ -225,6 +225,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .bewijs-dl:hover{background:#C8DAFB}
 .uploading{opacity:.6;pointer-events:none}
 </style>
+<script>
+window._portalToken = null;
+window._portalEmail = '';
+window._appBooted = false;
+window.addEventListener('message', function(event) {
+  if (event.origin !== 'https://lon-ka.github.io') return;
+  if (!event.data || event.data.type !== 'MSAL_TOKEN') return;
+  if (window._portalToken) return;
+  window._portalToken = event.data.token;
+  window._portalEmail = event.data.email || '';
+  if (!window._appBooted) boot();
+});
+
+</script>
 </head>
 <body>
 
@@ -291,7 +305,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 // CONFIG — vervang na installatie
 // ═══════════════════════════════════════════════════════════════════
 const CONFIG = {
-  clientId:    'e519feab-055a-4cea-9a8d-31220fae44f8',
+  clientId:    '481e8cb4-58ca-49b1-bb8b-5b02cbb45b4c',
   tenantId:    '655d15e1-e5fc-4868-8462-8463dc0ff014',
   siteId:      'londerwijs.sharepoint.com,480a9c62-8033-4d46-89fb-0e285a001d8e,4d5ecb10-38f0-422f-b892-af256a5da6fc',
   lijstIds: {
