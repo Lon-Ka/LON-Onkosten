@@ -224,6 +224,31 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .bewijs-dl{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:#EEF4FE;border:1px solid #C8DAFB;border-radius:12px;font-size:11px;color:#1A4E8E;cursor:pointer;text-decoration:none;margin:2px}
 .bewijs-dl:hover{background:#C8DAFB}
 .uploading{opacity:.6;pointer-events:none}
+
+/* ── HELP DRAWER ─────────────────────────────────────── */
+.help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9000;opacity:0;pointer-events:none;transition:opacity .25s}
+.help-overlay.on{opacity:1;pointer-events:all}
+.help-drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:white;z-index:9001;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.15)}
+.help-drawer.on{transform:translateX(0)}
+.help-hdr{color:white;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.help-hdr h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+.help-close{background:rgba(255,255,255,.2);border:none;border-radius:8px;color:white;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .15s;flex-shrink:0}
+.help-close:hover{background:rgba(255,255,255,.35)}
+.help-nav{display:flex;border-bottom:1px solid #E8E5DC;flex-shrink:0;overflow-x:auto}
+.help-tab{padding:10px 14px;font-size:12px;font-weight:600;color:#888;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .15s}
+.help-tab:hover{color:#333}
+.help-body{flex:1;overflow-y:auto;padding:1.25rem}
+.help-section{display:none}.help-section.active{display:block}
+.help-section h3{font-size:14px;font-weight:700;margin:0 0 .5rem;display:flex;align-items:center;gap:6px}
+.help-section h4{font-size:11px;font-weight:700;color:#555;margin:.9rem 0 .3rem;text-transform:uppercase;letter-spacing:.04em}
+.help-section p{font-size:13px;color:#444;line-height:1.65;margin:0 0 .75rem}
+.help-section ul{margin:.25rem 0 .75rem;padding-left:1.25rem}
+.help-section li{font-size:13px;color:#444;line-height:1.65;margin-bottom:.25rem}
+.help-tip{border-left:3px solid #888;border-radius:0 8px 8px 0;padding:.6rem .85rem;margin:.75rem 0;font-size:12px;line-height:1.55;background:#F8F7F4;color:#444}
+.help-step{display:flex;gap:.75rem;margin-bottom:.6rem}
+.help-step-nr{flex-shrink:0;width:22px;height:22px;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:2px;background:#888}
+.help-step-txt{font-size:13px;color:#444;line-height:1.6}
+.help-footer{padding:.75rem 1.25rem;border-top:1px solid #E8E5DC;font-size:11px;color:#AAA;flex-shrink:0;text-align:center}
 </style>
 <script>
 window._portalToken = null;
@@ -283,8 +308,9 @@ window.addEventListener('message', function(event) {
         <span id="topRolPill" class="role-pill role-lk" style="margin-left:4px">—</span>
       </div>
       <button class="icon-btn" onclick="refresh()" title="Verversen"><i class="ti ti-refresh"></i></button>
+      <button class="icon-btn" onclick="openHelp()" title="Help"><i class="ti ti-help"></i></button>
       <button class="icon-btn" id="btnRolWissel" onclick="wisselRol()" title="Wissel van rol" style="display:none"><i class="ti ti-switch-horizontal"></i></button>
-      <button class="icon-btn" onclick="logout()" title="Afmelden"><i class="ti ti-logout"></i></button>
+      
     </div>
   </div>
 
@@ -382,9 +408,6 @@ async function login(){
   try{
     await msalApp.loginRedirect({scopes:SCOPES});
   }catch(e){showError('Aanmelden mislukt: '+e.message);}
-}
-async function logout(){
-  await msalApp.logoutRedirect({postLogoutRedirectUri: CONFIG.redirectUri});
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1939,6 +1962,78 @@ function aangifte_html_fiets(nm, f, traject, calYr, calMo, totalEur){
     <div style="margin-top:10px;font-size:11px;color:#888">Aangemaakt op ${new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'})} — ${CONFIG.campus}</div>
   </div>`;
 }
+
+function openHelp(){
+  document.getElementById('helpOverlay').classList.add('on');
+  document.getElementById('helpDrawer').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeHelp(){
+  document.getElementById('helpOverlay').classList.remove('on');
+  document.getElementById('helpDrawer').classList.remove('on');
+  document.body.style.overflow='';
+}
+function showHelpTab(id,btn){
+  document.querySelectorAll('.help-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.help-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('help-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();});
+
 </script>
+
+<!-- HELP DRAWER -->
+<div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
+<div class="help-drawer" id="helpDrawer">
+  <div class="help-hdr" style="background:#1F4E79">
+    <h2>&#9432; Help &mdash; Onkostennota's</h2>
+    <button class="help-close" onclick="closeHelp()">&#x2715;</button>
+  </div>
+  <div class="help-nav"><button class="help-tab  active" onclick="showHelpTab('algemeen',this)">Algemeen</button><button class="help-tab" onclick="showHelpTab('fiets',this)">Fiets</button><button class="help-tab" onclick="showHelpTab('ov',this)">Openbaar vervoer</button><button class="help-tab" onclick="showHelpTab('auto',this)">Eigen wagen</button><button class="help-tab" onclick="showHelpTab('beheer',this)">Beheer</button></div>
+  <div class="help-body"><div class="help-section  active" id="help-algemeen">
+    <h3>&#8505; Over deze applicatie</h3>
+    <p>Met <strong>Onkostennota's</strong> dien je vergoedingsaanvragen in voor verplaatsingen naar en tussen scholen. Je meldt je aan via het <strong>MijnDigiKAntoor</strong> portaal — een apart wachtwoord is niet nodig.</p>
+    <div class="help-tip"><strong>Toegang:</strong> enkel via MijnDigiKAntoor. Afmelden doe je via het portaal.</div>
+    <h4>Rollen</h4>
+    <ul>
+      <li><strong>Personeelslid:</strong> aanvragen indienen en eigen aanvragen bekijken</li>
+      <li><strong>Directeur:</strong> aanvragen van jouw school beoordelen</li>
+      <li><strong>Secretariaat:</strong> maandoverzicht van alle goedgekeurde aanvragen</li>
+    </ul>
+    <h4>Workflow</h4>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Personeelslid dient aanvraag in</div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Directeur keurt goed of af</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Secretariaat verwerkt de goedgekeurde aanvragen</div></div></div><div class="help-section" id="help-fiets">
+    <h3>&#128690; Fietsvergoeding</h3>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Klik op <strong>Aanvraag indienen</strong> → kies <strong>Fietsvergoeding</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Stel je traject in — km worden automatisch ingevuld</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Klik in de kalender op de gefietste dagen</div></div>
+    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Controleer het totaalbedrag en dien in</div></div>
+    <div class="help-tip"><strong>Let op:</strong> schoolvakanties en feestdagen zijn automatisch geblokkeerd.</div>
+    <h4>Meerdere trajecten</h4>
+    <p>Gebruik <strong>+ Traject toevoegen</strong> als je op dezelfde dag naar verschillende scholen rijdt.</p></div><div class="help-section" id="help-ov">
+    <h3>&#128649; Openbaar vervoer</h3>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Kies <strong>Openbaar vervoer</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Vul datum, traject en bedrag in</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Laad een bewijs op (ticket, screenshot abonnement)</div></div>
+    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Dien in</div></div>
+    <div class="help-tip"><strong>Bewijs verplicht:</strong> zonder bewijs kan de aanvraag niet goedgekeurd worden.</div></div><div class="help-section" id="help-auto">
+    <h3>&#128663; Eigen wagen</h3>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Kies <strong>Eigen wagen</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Vul per rit datum, vertrek, bestemming en km in</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Voeg bewijs toe indien gevraagd</div></div>
+    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Controleer totaal en dien in</div></div>
+    <div class="help-tip"><strong>Woon-werkverkeer</strong> wordt niet vergoed via deze module — enkel professionele verplaatsingen.</div></div><div class="help-section" id="help-beheer">
+    <h3>&#9881; Voor directeurs en secretariaat</h3>
+    <h4>Directeur — aanvragen beoordelen</h4>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Open het tabblad <strong>Te beoordelen</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Klik op een aanvraag om details te bekijken</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Keur goed of af</div></div>
+    <h4>Secretariaat — maandoverzicht</h4>
+    <p>Het tabblad <strong>Maandoverzicht</strong> toont alle goedgekeurde aanvragen per maand, gegroepeerd per type, exporteerbaar voor de boekhouding.</p></div></div>
+  <div class="help-footer">Scholengroep Londerzeel BaO — ict@centrumschool.londerzeel.be</div>
+</div>
+
 </body>
 </html>
