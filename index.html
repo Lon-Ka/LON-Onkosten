@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Onkosten — Londerzeel</title>
+<title>Onkosten — Kapelle op den Bos</title>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-:root{--a:#1A4E8E;--al:#E8EFF8;--at:#0D3260;--ab:#C4D4EE;--a2:#6B3FA0;--al2:#F3EDFC;--a3:#B85000;--al3:#FEF3E8}
+:root{--a:#1B6E3A;--al:#E8F4EE;--at:#0F4A27;--ab:#C8E6D0;--a2:#6B3FA0;--al2:#F3EDFC;--a3:#B85000;--al3:#FEF3E8}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#F8F7F4;color:#1A1A18;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
 /* LOADING / LOGIN */
@@ -51,7 +51,7 @@ body{background:#F8F7F4;color:#1A1A18;font-family:-apple-system,BlinkMacSystemFo
 label{display:block;font-size:11px;font-weight:700;color:#777;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
 input,select,textarea{width:100%;padding:9px 12px;border:1px solid #DDD;border-radius:8px;font-size:14px;background:white;color:#1A1A18;font-family:inherit;transition:border-color .15s}
 textarea{resize:vertical;min-height:80px}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 3px rgba(26,78,142,.1)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 3px rgba(27,110,58,.1)}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .hint{font-size:11px;color:#999;margin-top:4px}
 /* BUTTONS */
@@ -210,7 +210,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .chip-loading{padding:10px 12px;font-size:12px;color:#AAA;display:flex;align-items:center;gap:8px}
 .chip-empty{padding:10px 12px;font-size:12px;color:#AAA}
 
-
 /* ── BEWIJZEN ──────────────────────────────────────────── */
 .bewijs-zone{border:1.5px dashed #CCC;border-radius:8px;padding:12px;margin:.75rem 0;cursor:pointer;transition:all .15s;text-align:center;color:#888;font-size:13px}
 .bewijs-zone:hover{border-color:var(--a);color:var(--at);background:var(--al)}
@@ -231,7 +230,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .help-drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:white;z-index:9001;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.15)}
 .help-drawer.on{transform:translateX(0)}
 .help-hdr{color:white;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.help-hdr h2{font-size:15px;font-weight:700;margin:0}
+.help-hdr h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
 .help-close{background:rgba(255,255,255,.2);border:none;border-radius:8px;color:white;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .15s;flex-shrink:0}
 .help-close:hover{background:rgba(255,255,255,.35)}
 .help-nav{display:flex;border-bottom:1px solid #E8E5DC;flex-shrink:0;overflow-x:auto}
@@ -239,21 +238,78 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .help-tab:hover{color:#333}
 .help-body{flex:1;overflow-y:auto;padding:1.25rem}
 .help-section{display:none}.help-section.active{display:block}
-.help-section h3{font-size:14px;font-weight:700;margin:0 0 .5rem}
+.help-section h3{font-size:14px;font-weight:700;margin:0 0 .5rem;display:flex;align-items:center;gap:6px}
 .help-section h4{font-size:11px;font-weight:700;color:#555;margin:.9rem 0 .3rem;text-transform:uppercase;letter-spacing:.04em}
 .help-section p{font-size:13px;color:#444;line-height:1.65;margin:0 0 .75rem}
 .help-section ul{margin:.25rem 0 .75rem;padding-left:1.25rem}
 .help-section li{font-size:13px;color:#444;line-height:1.65;margin-bottom:.25rem}
 .help-tip{border-left:3px solid #888;border-radius:0 8px 8px 0;padding:.6rem .85rem;margin:.75rem 0;font-size:12px;line-height:1.55;background:#F8F7F4;color:#444}
 .help-step{display:flex;gap:.75rem;margin-bottom:.6rem}
-.help-step-nr{flex-shrink:0;width:22px;height:22px;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:2px}
+.help-step-nr{flex-shrink:0;width:22px;height:22px;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:2px;background:#888}
 .help-step-txt{font-size:13px;color:#444;line-height:1.6}
 .help-footer{padding:.75rem 1.25rem;border-top:1px solid #E8E5DC;font-size:11px;color:#AAA;flex-shrink:0;text-align:center}
+
+/* Verberg app help knop in portaal context */
+body.in-portal .icon-btn[title="Help"],
+body.in-portal button[title="Help"].icon-btn,
+body.in-portal #helpBtn { display: none !important; }
 </style>
+
+<script>
+// Verplicht gebruik via MijnDigiKAntoor portaal
+if (window.self === window.top) {
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center;
+                        justify-content:center; height:100vh; font-family:'Segoe UI',sans-serif;
+                        background:#F5F7FA; text-align:center; padding:20px;">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="margin-bottom:24px;">
+                    <rect width="64" height="64" rx="16" fill="#0F1D2E"/>
+                    <rect x="12" y="12" width="16" height="16" rx="4" fill="#1A6BB5"/>
+                    <rect x="36" y="12" width="16" height="16" rx="4" fill="#2E8B57"/>
+                    <rect x="12" y="36" width="16" height="16" rx="4" fill="#C05A1A"/>
+                    <rect x="36" y="36" width="16" height="16" rx="4" fill="#6B7A8D"/>
+                </svg>
+                <h2 style="margin:0 0 8px; font-size:1.4rem; color:#1C2B3A;">
+                    Toegang via portaal vereist
+                </h2>
+                <p style="margin:0 0 28px; color:#6B7A8D; max-width:360px; line-height:1.5;">
+                    Deze applicatie is enkel beschikbaar via het MijnDigiKAntoor portaal.
+                </p>
+                <a href="https://lon-ka.github.io/KA-portaal/"
+                   style="display:inline-flex; align-items:center; gap:10px;
+                          padding:14px 28px; background:#0F1D2E; color:#fff;
+                          text-decoration:none; border-radius:10px; font-weight:600;
+                          font-size:.95rem;">
+                    Naar MijnDigiKAntoor
+                </a>
+            </div>`;
+    });
+}
+</script>
 <script>
 if (window.self === window.top) {
   document.addEventListener('DOMContentLoaded', function() {
-    document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:Segoe UI,sans-serif;background:#F5F7FA;text-align:center;padding:20px"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="margin-bottom:24px"><rect width="64" height="64" rx="16" fill="#0D1B2A"/><rect x="12" y="12" width="16" height="16" rx="4" fill="#1A6BB5"/><rect x="36" y="12" width="16" height="16" rx="4" fill="#1F4E79"/><rect x="12" y="36" width="16" height="16" rx="4" fill="#C05A1A"/><rect x="36" y="36" width="16" height="16" rx="4" fill="#6B7A8D"/></svg><h2 style="margin:0 0 8px;font-size:1.4rem;color:#1C2B3A">Toegang via portaal vereist</h2><p style="margin:0 0 28px;color:#6B7A8D;max-width:360px;line-height:1.5">Deze applicatie is enkel beschikbaar via het MijnDigiLoket portaal.</p><a href="https://lon-ka.github.io/LON-portaal/" style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:#0D1B2A;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:.95rem">Naar MijnDigiLoket</a></div>';
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                  height:100vh;font-family:'Segoe UI',sans-serif;background:#F5F7FA;text-align:center;padding:20px;">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="margin-bottom:24px;">
+          <rect width="64" height="64" rx="16" fill="#0F1D2E"/>
+          <rect x="12" y="12" width="16" height="16" rx="4" fill="#1A6BB5"/>
+          <rect x="36" y="12" width="16" height="16" rx="4" fill="#2E8B57"/>
+          <rect x="12" y="36" width="16" height="16" rx="4" fill="#C05A1A"/>
+          <rect x="36" y="36" width="16" height="16" rx="4" fill="#6B7A8D"/>
+        </svg>
+        <h2 style="margin:0 0 8px;font-size:1.4rem;color:#1C2B3A;">Toegang via portaal vereist</h2>
+        <p style="margin:0 0 28px;color:#6B7A8D;max-width:360px;line-height:1.5;">
+          Deze applicatie is enkel beschikbaar via het MijnDigiKAntoor portaal.
+        </p>
+        <a href="https://lon-ka.github.io/KA-portaal/"
+           style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;
+                  background:#0F1D2E;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">
+          Naar MijnDigiKAntoor
+        </a>
+      </div>`;
   });
 }
 </script>
@@ -261,15 +317,19 @@ if (window.self === window.top) {
 window._portalToken = null;
 window._portalEmail = '';
 window._appBooted = false;
-window.addEventListener('message', function(event) {
-  if (event.origin !== 'https://lon-ka.github.io') return;
-  if (!event.data || event.data.type !== 'MSAL_TOKEN') return;
-  if (window._portalToken) return;
-  window._portalToken = event.data.token;
-  window._portalEmail = event.data.email || '';
-  if (!window._appBooted) boot();
+document.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('message', function(event) {
+    if (event.origin !== 'https://lon-ka.github.io') return;
+    if (!event.data) return;
+    if (event.data.type === 'OPEN_HELP') { if(typeof openHelp==='function') openHelp(); return; }
+    if (event.data.type !== 'MSAL_TOKEN') return;
+    if (window._portalToken) return;
+    window._portalToken = event.data.token;
+    document.body.classList.add('in-portal');
+    window._portalEmail = event.data.email || '';
+    if (!window._appBooted && typeof boot==='function') boot();
+  });
 });
-
 </script>
 </head>
 <body>
@@ -277,7 +337,7 @@ window.addEventListener('message', function(event) {
 <!-- LOADING -->
 <div id="viewLoading" class="splash">
   <div class="splash-logo"><i class="ti ti-receipt"></i></div>
-  <h1>Onkosten — Londerzeel</h1>
+  <h1>Onkosten — Kapelle op den Bos</h1>
   <p>Scholengemeenschap Lonka</p>
   <div class="spin"></div>
 </div>
@@ -293,7 +353,7 @@ window.addEventListener('message', function(event) {
 <!-- LOGIN -->
 <div id="viewLogin" style="display:none" class="splash">
   <div class="splash-logo"><i class="ti ti-receipt"></i></div>
-  <h1>Onkosten — Londerzeel</h1>
+  <h1>Onkosten — Kapelle op den Bos</h1>
   <p>Meld aan met uw Microsoft 365-account om verder te gaan.</p>
   <button class="btn p" onclick="login()"><i class="ti ti-brand-microsoft"></i>Aanmelden</button>
 </div>
@@ -304,7 +364,7 @@ window.addEventListener('message', function(event) {
     <div class="topbar-l">
       <i class="ti ti-receipt" style="font-size:22px"></i>
       <div>
-        <h1>Onkosten — Londerzeel</h1>
+        <h1>Onkosten — Kapelle op den Bos</h1>
         <p>Scholengemeenschap Lonka</p>
       </div>
     </div>
@@ -316,6 +376,7 @@ window.addEventListener('message', function(event) {
       </div>
       <button class="icon-btn" onclick="refresh()" title="Verversen"><i class="ti ti-refresh"></i></button>
       <button class="icon-btn" onclick="openHelp()" title="Help"><i class="ti ti-help"></i></button>
+      
       <button class="icon-btn" id="btnRolWissel" onclick="wisselRol()" title="Wissel van rol" style="display:none"><i class="ti ti-switch-horizontal"></i></button>
       
     </div>
@@ -338,20 +399,20 @@ window.addEventListener('message', function(event) {
 // CONFIG — vervang na installatie
 // ═══════════════════════════════════════════════════════════════════
 const CONFIG = {
-  clientId:    '481e8cb4-58ca-49b1-bb8b-5b02cbb45b4c',
-  tenantId:    '655d15e1-e5fc-4868-8462-8463dc0ff014',
-  siteId:      'londerwijs.sharepoint.com,480a9c62-8033-4d46-89fb-0e285a001d8e,4d5ecb10-38f0-422f-b892-af256a5da6fc',
+  clientId:    'b427a5ba-542f-4254-8ca0-5fa41b1d130a',
+  tenantId:    '165074eb-b8b7-49e8-a9b4-54cac7939ed2',
+  siteId:      'gebaskabe.sharepoint.com,84323b19-c1b0-40ac-a0d6-2c24776fba4b,e0158228-22a6-4225-87dc-fe7d619ae7e4',
   lijstIds: {
-    profielen:  'f7a483ee-7206-4e07-aea1-e329d4b37a1b',    // Nieuwe lijst — zie installatiegids
-    aanvragen:  'cfabfe69-5926-496d-9b2f-adc283e99e21',
-    gebruikers: '02988043-9345-4865-bcbb-9067a63463ac',
+    profielen:  '41d4c1e5-f3c9-4bfc-bbd1-f5788862a08f',
+    aanvragen:  'ce88d35f-fb30-41cc-8e95-5143bcffc79a',
+    gebruikers: 'e3ff98a4-268b-4427-80db-aa5cbb28ce57',
   },
-  redirectUri:  'https://lon-ka.github.io/LON-Onkosten/',
-  campus:       'Londerzeel',
-  tariefFiets:  0.21,
+  redirectUri:  'https://lon-ka.github.io/KA-Onkosten/',
+  campus:       'Kapelle op den Bos',
+  tariefFiets:  0.35,
   tariefAuto:   0.43,
   tariefCarpool:0.24,
-  scholen:      ['Centrumschool','Kouterschool','School Ter Elst'],
+  scholen:      ['Het Kiezeltje','De Kei','Het Mulderke'],
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -395,7 +456,7 @@ const msalApp = new msal.PublicClientApplication({
 const SCOPES=['User.Read','Sites.ReadWrite.All'];
 
 async function getToken(){
-  if(window._portalToken && !msalApp.getAllAccounts().length){return window._portalToken;}
+  if(window._portalToken) return window._portalToken;
   const accounts=msalApp.getAllAccounts();
   if(!accounts.length)return null;
   try{
@@ -403,6 +464,10 @@ async function getToken(){
     return r.accessToken;
   }catch(e){
     // Silent failed — redirect to Microsoft for new token
+    if(window.self !== window.top){
+      showError('Sessie verlopen. Sluit dit venster en meld opnieuw aan via het portaal.');
+      return null;
+    }
     await msalApp.acquireTokenRedirect({scopes:SCOPES,account:accounts[0]});
     return null;
   }
@@ -565,27 +630,11 @@ async function boot(){
     const accounts=msalApp.getAllAccounts();
     if(!accounts.length){
       if(window.self !== window.top){
-        // Wacht op portaal token
-        if(window._portalToken){
-          // Gebruik portal token — getToken() pikt dit op
-          const tkn=await getToken();
-          const me=await fetch('https://graph.microsoft.com/v1.0/me',{headers:{'Authorization':'Bearer '+tkn}}).then(r=>r.json());
-          const email=(me.mail||me.userPrincipalName||'').toLowerCase();
-          S.displayNaam=me.displayName||email; S.email=email;
-          const alleG=await getListItems(CONFIG.lijstIds.gebruikers);
-          const gebruikers=alleG.filter(u=>(u.Title||'').toLowerCase()===email);
-          if(!gebruikers.length){showError(`Account (${email}) niet geconfigureerd.`);return;}
-          if(gebruikers.length>1){showRolKiezer(gebruikers,me);return;}
-          activeerRol(gebruikers[0],me); window._appBooted=true; return;
-        }
-        await new Promise(r=>setTimeout(r,2000));
-        if(window._portalToken){
-          boot(); return;
-        }
-        showError('Geen actieve sessie. Meld aan via het MijnDigiLoket portaal.');
+        showError('Geen actieve sessie gevonden. Meld aan via het MijnDigiKAntoor portaal en open de app opnieuw.');
         return;
       }
-      showView('login');return;
+      showView('login');
+      return;
     }
 
     // Huidige gebruiker ophalen
@@ -1828,7 +1877,6 @@ async function fetchAddresses(q, wrap, inp, onSelect) {
 }
 
 
-
 // ── BEWIJZEN (SharePoint Document Library) ───────────────────────
 async function uploadBewijs(itemId, file){
   const token = await getToken();
@@ -1970,35 +2018,77 @@ function aangifte_html_fiets(nm, f, traject, calYr, calMo, totalEur){
   </div>`;
 }
 
-function openHelp(){document.getElementById('helpOverlay').classList.add('on');document.getElementById('helpDrawer').classList.add('on');document.body.style.overflow='hidden';}
-function closeHelp(){document.getElementById('helpOverlay').classList.remove('on');document.getElementById('helpDrawer').classList.remove('on');document.body.style.overflow='';}
-function showHelpTab(id,btn){document.querySelectorAll('.help-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.help-tab').forEach(t=>t.classList.remove('active'));document.getElementById('help-'+id).classList.add('active');btn.classList.add('active');}
+function openHelp(){
+  document.getElementById('helpOverlay').classList.add('on');
+  document.getElementById('helpDrawer').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeHelp(){
+  document.getElementById('helpOverlay').classList.remove('on');
+  document.getElementById('helpDrawer').classList.remove('on');
+  document.body.style.overflow='';
+}
+function showHelpTab(id,btn){
+  document.querySelectorAll('.help-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.help-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('help-'+id).classList.add('active');
+  btn.classList.add('active');
+}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();});
-
-document.addEventListener('DOMContentLoaded', function() {
-  window.addEventListener('message', function(event) {
-    if (event.origin !== 'https://lon-ka.github.io') return;
-    if (!event.data) return;
-    if (event.data.type === 'OPEN_HELP') { if(typeof openHelp==='function') openHelp(); return; }
-    if (event.data.type !== 'MSAL_TOKEN') return;
-    if (window._portalToken) return;
-    window._portalToken = event.data.token;
-    window._portalEmail = event.data.email || '';
-    if (!window._appBooted && typeof boot==='function') boot();
-  });
-});
 
 </script>
 
 <!-- HELP DRAWER -->
 <div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
 <div class="help-drawer" id="helpDrawer">
-  <div class="help-hdr" style="background:#1F4E79">
-    <h2>&#9432; Help &mdash; Onkosten</h2>
+  <div class="help-hdr" style="background:#1A6B4A">
+    <h2>&#9432; Help &mdash; Onkostennota's</h2>
     <button class="help-close" onclick="closeHelp()">&#x2715;</button>
   </div>
-  <div class="help-nav"><button class="help-tab  active" onclick="showHelpTab('algemeen',this)">Algemeen</button><button class="help-tab" onclick="showHelpTab('fiets',this)">Fiets</button><button class="help-tab" onclick="showHelpTab('ov',this)">Openbaar vervoer</button><button class="help-tab" onclick="showHelpTab('auto',this)">Eigen wagen</button><button class="help-tab" onclick="showHelpTab('beheer',this)">Beheer</button></div><div class="help-body"><div class="help-section  active" id="help-algemeen"><h3 style="color:#1F4E79">&#8505; Over Onkostennota's</h3><p>Dien vergoedingsaanvragen in voor verplaatsingen. Enkel via het portaal.</p><h4>Rollen</h4><ul><li><strong>Personeelslid:</strong> aanvragen indienen</li><li><strong>Directeur:</strong> aanvragen beoordelen</li><li><strong>Secretariaat:</strong> maandoverzicht</li></ul></div><div class="help-section" id="help-fiets"><h3 style="color:#1F4E79">&#128690; Fietsvergoeding</h3><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">1</div><div class="help-step-txt">Kies <strong>Fietsvergoeding</strong></div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">2</div><div class="help-step-txt">Stel traject in — km automatisch berekend</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">3</div><div class="help-step-txt">Klik gefietste dagen in kalender</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">4</div><div class="help-step-txt">Controleer totaal en dien in</div></div></div><div class="help-section" id="help-ov"><h3 style="color:#1F4E79">&#128649; Openbaar vervoer</h3><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">1</div><div class="help-step-txt">Kies <strong>Openbaar vervoer</strong></div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">2</div><div class="help-step-txt">Vul datum, traject en bedrag in</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">3</div><div class="help-step-txt">Laad bewijs op (ticket/screenshot)</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">4</div><div class="help-step-txt">Dien in</div></div><div class="help-tip"><strong>Bewijs verplicht</strong> voor goedkeuring.</div></div><div class="help-section" id="help-auto"><h3 style="color:#1F4E79">&#128663; Eigen wagen</h3><p>Enkel professionele verplaatsingen — geen woon-werkverkeer.</p><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">1</div><div class="help-step-txt">Kies <strong>Eigen wagen</strong></div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">2</div><div class="help-step-txt">Vul rit, datum en km in</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">3</div><div class="help-step-txt">Dien in</div></div></div><div class="help-section" id="help-beheer"><h3 style="color:#1F4E79">&#9881; Directeur &amp; Secretariaat</h3><h4>Directeur</h4><p>Tab <strong>Te beoordelen</strong> → details bekijken → goed- of afkeuren.</p><h4>Secretariaat</h4><p>Tab <strong>Maandoverzicht</strong> toont alle goedgekeurde aanvragen exporteerbaar voor boekhouding.</p></div></div>
-  <div class="help-footer">Scholengroep Londerzeel BaO — ict@centrumschool.londerzeel.be</div>
+  <div class="help-nav"><button class="help-tab  active" onclick="showHelpTab('algemeen',this)">Algemeen</button><button class="help-tab" onclick="showHelpTab('fiets',this)">Fiets</button><button class="help-tab" onclick="showHelpTab('ov',this)">Openbaar vervoer</button><button class="help-tab" onclick="showHelpTab('auto',this)">Eigen wagen</button><button class="help-tab" onclick="showHelpTab('beheer',this)">Beheer</button></div>
+  <div class="help-body"><div class="help-section  active" id="help-algemeen">
+    <h3>&#8505; Over deze applicatie</h3>
+    <p>Met <strong>Onkostennota's</strong> dien je vergoedingsaanvragen in voor verplaatsingen naar en tussen scholen. Je meldt je aan via het <strong>MijnDigiKAntoor</strong> portaal — een apart wachtwoord is niet nodig.</p>
+    <div class="help-tip"><strong>Toegang:</strong> enkel via MijnDigiKAntoor. Afmelden doe je via het portaal.</div>
+    <h4>Rollen</h4>
+    <ul>
+      <li><strong>Personeelslid:</strong> aanvragen indienen en eigen aanvragen bekijken</li>
+      <li><strong>Directeur:</strong> aanvragen van jouw school beoordelen</li>
+      <li><strong>Secretariaat:</strong> maandoverzicht van alle goedgekeurde aanvragen</li>
+    </ul>
+    <h4>Workflow</h4>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Personeelslid dient aanvraag in</div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Directeur keurt goed of af</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Secretariaat verwerkt de goedgekeurde aanvragen</div></div></div><div class="help-section" id="help-fiets">
+    <h3>&#128690; Fietsvergoeding</h3>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Klik op <strong>Aanvraag indienen</strong> → kies <strong>Fietsvergoeding</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Stel je traject in — km worden automatisch ingevuld</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Klik in de kalender op de gefietste dagen</div></div>
+    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Controleer het totaalbedrag en dien in</div></div>
+    <div class="help-tip"><strong>Let op:</strong> schoolvakanties en feestdagen zijn automatisch geblokkeerd.</div>
+    <h4>Meerdere trajecten</h4>
+    <p>Gebruik <strong>+ Traject toevoegen</strong> als je op dezelfde dag naar verschillende scholen rijdt.</p></div><div class="help-section" id="help-ov">
+    <h3>&#128649; Openbaar vervoer</h3>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Kies <strong>Openbaar vervoer</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Vul datum, traject en bedrag in</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Laad een bewijs op (ticket, screenshot abonnement)</div></div>
+    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Dien in</div></div>
+    <div class="help-tip"><strong>Bewijs verplicht:</strong> zonder bewijs kan de aanvraag niet goedgekeurd worden.</div></div><div class="help-section" id="help-auto">
+    <h3>&#128663; Eigen wagen</h3>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Kies <strong>Eigen wagen</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Vul per rit datum, vertrek, bestemming en km in</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Voeg bewijs toe indien gevraagd</div></div>
+    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Controleer totaal en dien in</div></div>
+    <div class="help-tip"><strong>Woon-werkverkeer</strong> wordt niet vergoed via deze module — enkel professionele verplaatsingen.</div></div><div class="help-section" id="help-beheer">
+    <h3>&#9881; Voor directeurs en secretariaat</h3>
+    <h4>Directeur — aanvragen beoordelen</h4>
+    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Open het tabblad <strong>Te beoordelen</strong></div></div>
+    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Klik op een aanvraag om details te bekijken</div></div>
+    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Keur goed of af</div></div>
+    <h4>Secretariaat — maandoverzicht</h4>
+    <p>Het tabblad <strong>Maandoverzicht</strong> toont alle goedgekeurde aanvragen per maand, gegroepeerd per type, exporteerbaar voor de boekhouding.</p></div></div>
+  <div class="help-footer">Scholengroep Kapelle-op-den-Bos BaO — ict@gebaska.be</div>
 </div>
+
 </body>
 </html>
