@@ -231,7 +231,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .help-drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:white;z-index:9001;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.15)}
 .help-drawer.on{transform:translateX(0)}
 .help-hdr{color:white;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.help-hdr h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+.help-hdr h2{font-size:15px;font-weight:700;margin:0}
 .help-close{background:rgba(255,255,255,.2);border:none;border-radius:8px;color:white;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .15s;flex-shrink:0}
 .help-close:hover{background:rgba(255,255,255,.35)}
 .help-nav{display:flex;border-bottom:1px solid #E8E5DC;flex-shrink:0;overflow-x:auto}
@@ -239,14 +239,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a);box-s
 .help-tab:hover{color:#333}
 .help-body{flex:1;overflow-y:auto;padding:1.25rem}
 .help-section{display:none}.help-section.active{display:block}
-.help-section h3{font-size:14px;font-weight:700;margin:0 0 .5rem;display:flex;align-items:center;gap:6px}
+.help-section h3{font-size:14px;font-weight:700;margin:0 0 .5rem}
 .help-section h4{font-size:11px;font-weight:700;color:#555;margin:.9rem 0 .3rem;text-transform:uppercase;letter-spacing:.04em}
 .help-section p{font-size:13px;color:#444;line-height:1.65;margin:0 0 .75rem}
 .help-section ul{margin:.25rem 0 .75rem;padding-left:1.25rem}
 .help-section li{font-size:13px;color:#444;line-height:1.65;margin-bottom:.25rem}
 .help-tip{border-left:3px solid #888;border-radius:0 8px 8px 0;padding:.6rem .85rem;margin:.75rem 0;font-size:12px;line-height:1.55;background:#F8F7F4;color:#444}
 .help-step{display:flex;gap:.75rem;margin-bottom:.6rem}
-.help-step-nr{flex-shrink:0;width:22px;height:22px;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:2px;background:#888}
+.help-step-nr{flex-shrink:0;width:22px;height:22px;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:2px}
 .help-step-txt{font-size:13px;color:#444;line-height:1.6}
 .help-footer{padding:.75rem 1.25rem;border-top:1px solid #E8E5DC;font-size:11px;color:#AAA;flex-shrink:0;text-align:center}
 </style>
@@ -263,9 +263,7 @@ window._portalEmail = '';
 window._appBooted = false;
 window.addEventListener('message', function(event) {
   if (event.origin !== 'https://lon-ka.github.io') return;
-  if (!event.data) return;
-  if (event.data.type === 'OPEN_HELP') { openHelp(); return; }
-  if (event.data.type !== 'MSAL_TOKEN') return;
+  if (!event.data || event.data.type !== 'MSAL_TOKEN') return;
   if (window._portalToken) return;
   window._portalToken = event.data.token;
   window._portalEmail = event.data.email || '';
@@ -1972,23 +1970,23 @@ function aangifte_html_fiets(nm, f, traject, calYr, calMo, totalEur){
   </div>`;
 }
 
-function openHelp(){
-  document.getElementById('helpOverlay').classList.add('on');
-  document.getElementById('helpDrawer').classList.add('on');
-  document.body.style.overflow='hidden';
-}
-function closeHelp(){
-  document.getElementById('helpOverlay').classList.remove('on');
-  document.getElementById('helpDrawer').classList.remove('on');
-  document.body.style.overflow='';
-}
-function showHelpTab(id,btn){
-  document.querySelectorAll('.help-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.help-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('help-'+id).classList.add('active');
-  btn.classList.add('active');
-}
+function openHelp(){document.getElementById('helpOverlay').classList.add('on');document.getElementById('helpDrawer').classList.add('on');document.body.style.overflow='hidden';}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('on');document.getElementById('helpDrawer').classList.remove('on');document.body.style.overflow='';}
+function showHelpTab(id,btn){document.querySelectorAll('.help-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.help-tab').forEach(t=>t.classList.remove('active'));document.getElementById('help-'+id).classList.add('active');btn.classList.add('active');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();});
+
+document.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('message', function(event) {
+    if (event.origin !== 'https://lon-ka.github.io') return;
+    if (!event.data) return;
+    if (event.data.type === 'OPEN_HELP') { if(typeof openHelp==='function') openHelp(); return; }
+    if (event.data.type !== 'MSAL_TOKEN') return;
+    if (window._portalToken) return;
+    window._portalToken = event.data.token;
+    window._portalEmail = event.data.email || '';
+    if (!window._appBooted && typeof boot==='function') boot();
+  });
+});
 
 </script>
 
@@ -1996,53 +1994,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();
 <div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
 <div class="help-drawer" id="helpDrawer">
   <div class="help-hdr" style="background:#1F4E79">
-    <h2>&#9432; Help &mdash; Onkostennota's</h2>
+    <h2>&#9432; Help &mdash; Onkosten</h2>
     <button class="help-close" onclick="closeHelp()">&#x2715;</button>
   </div>
-  <div class="help-nav"><button class="help-tab  active" onclick="showHelpTab('algemeen',this)">Algemeen</button><button class="help-tab" onclick="showHelpTab('fiets',this)">Fiets</button><button class="help-tab" onclick="showHelpTab('ov',this)">Openbaar vervoer</button><button class="help-tab" onclick="showHelpTab('auto',this)">Eigen wagen</button><button class="help-tab" onclick="showHelpTab('beheer',this)">Beheer</button></div>
-  <div class="help-body"><div class="help-section  active" id="help-algemeen">
-    <h3>&#8505; Over deze applicatie</h3>
-    <p>Met <strong>Onkostennota's</strong> dien je vergoedingsaanvragen in voor verplaatsingen naar en tussen scholen. Je meldt je aan via het <strong>MijnDigiKAntoor</strong> portaal — een apart wachtwoord is niet nodig.</p>
-    <div class="help-tip"><strong>Toegang:</strong> enkel via MijnDigiKAntoor. Afmelden doe je via het portaal.</div>
-    <h4>Rollen</h4>
-    <ul>
-      <li><strong>Personeelslid:</strong> aanvragen indienen en eigen aanvragen bekijken</li>
-      <li><strong>Directeur:</strong> aanvragen van jouw school beoordelen</li>
-      <li><strong>Secretariaat:</strong> maandoverzicht van alle goedgekeurde aanvragen</li>
-    </ul>
-    <h4>Workflow</h4>
-    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Personeelslid dient aanvraag in</div></div>
-    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Directeur keurt goed of af</div></div>
-    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Secretariaat verwerkt de goedgekeurde aanvragen</div></div></div><div class="help-section" id="help-fiets">
-    <h3>&#128690; Fietsvergoeding</h3>
-    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Klik op <strong>Aanvraag indienen</strong> → kies <strong>Fietsvergoeding</strong></div></div>
-    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Stel je traject in — km worden automatisch ingevuld</div></div>
-    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Klik in de kalender op de gefietste dagen</div></div>
-    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Controleer het totaalbedrag en dien in</div></div>
-    <div class="help-tip"><strong>Let op:</strong> schoolvakanties en feestdagen zijn automatisch geblokkeerd.</div>
-    <h4>Meerdere trajecten</h4>
-    <p>Gebruik <strong>+ Traject toevoegen</strong> als je op dezelfde dag naar verschillende scholen rijdt.</p></div><div class="help-section" id="help-ov">
-    <h3>&#128649; Openbaar vervoer</h3>
-    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Kies <strong>Openbaar vervoer</strong></div></div>
-    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Vul datum, traject en bedrag in</div></div>
-    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Laad een bewijs op (ticket, screenshot abonnement)</div></div>
-    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Dien in</div></div>
-    <div class="help-tip"><strong>Bewijs verplicht:</strong> zonder bewijs kan de aanvraag niet goedgekeurd worden.</div></div><div class="help-section" id="help-auto">
-    <h3>&#128663; Eigen wagen</h3>
-    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Kies <strong>Eigen wagen</strong></div></div>
-    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Vul per rit datum, vertrek, bestemming en km in</div></div>
-    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Voeg bewijs toe indien gevraagd</div></div>
-    <div class="help-step"><div class="help-step-nr">4</div><div class="help-step-txt">Controleer totaal en dien in</div></div>
-    <div class="help-tip"><strong>Woon-werkverkeer</strong> wordt niet vergoed via deze module — enkel professionele verplaatsingen.</div></div><div class="help-section" id="help-beheer">
-    <h3>&#9881; Voor directeurs en secretariaat</h3>
-    <h4>Directeur — aanvragen beoordelen</h4>
-    <div class="help-step"><div class="help-step-nr">1</div><div class="help-step-txt">Open het tabblad <strong>Te beoordelen</strong></div></div>
-    <div class="help-step"><div class="help-step-nr">2</div><div class="help-step-txt">Klik op een aanvraag om details te bekijken</div></div>
-    <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Keur goed of af</div></div>
-    <h4>Secretariaat — maandoverzicht</h4>
-    <p>Het tabblad <strong>Maandoverzicht</strong> toont alle goedgekeurde aanvragen per maand, gegroepeerd per type, exporteerbaar voor de boekhouding.</p></div></div>
+  <div class="help-nav"><button class="help-tab  active" onclick="showHelpTab('algemeen',this)">Algemeen</button><button class="help-tab" onclick="showHelpTab('fiets',this)">Fiets</button><button class="help-tab" onclick="showHelpTab('ov',this)">Openbaar vervoer</button><button class="help-tab" onclick="showHelpTab('auto',this)">Eigen wagen</button><button class="help-tab" onclick="showHelpTab('beheer',this)">Beheer</button></div><div class="help-body"><div class="help-section  active" id="help-algemeen"><h3 style="color:#1F4E79">&#8505; Over Onkostennota's</h3><p>Dien vergoedingsaanvragen in voor verplaatsingen. Enkel via het portaal.</p><h4>Rollen</h4><ul><li><strong>Personeelslid:</strong> aanvragen indienen</li><li><strong>Directeur:</strong> aanvragen beoordelen</li><li><strong>Secretariaat:</strong> maandoverzicht</li></ul></div><div class="help-section" id="help-fiets"><h3 style="color:#1F4E79">&#128690; Fietsvergoeding</h3><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">1</div><div class="help-step-txt">Kies <strong>Fietsvergoeding</strong></div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">2</div><div class="help-step-txt">Stel traject in — km automatisch berekend</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">3</div><div class="help-step-txt">Klik gefietste dagen in kalender</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">4</div><div class="help-step-txt">Controleer totaal en dien in</div></div></div><div class="help-section" id="help-ov"><h3 style="color:#1F4E79">&#128649; Openbaar vervoer</h3><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">1</div><div class="help-step-txt">Kies <strong>Openbaar vervoer</strong></div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">2</div><div class="help-step-txt">Vul datum, traject en bedrag in</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">3</div><div class="help-step-txt">Laad bewijs op (ticket/screenshot)</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">4</div><div class="help-step-txt">Dien in</div></div><div class="help-tip"><strong>Bewijs verplicht</strong> voor goedkeuring.</div></div><div class="help-section" id="help-auto"><h3 style="color:#1F4E79">&#128663; Eigen wagen</h3><p>Enkel professionele verplaatsingen — geen woon-werkverkeer.</p><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">1</div><div class="help-step-txt">Kies <strong>Eigen wagen</strong></div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">2</div><div class="help-step-txt">Vul rit, datum en km in</div></div><div class="help-step"><div class="help-step-nr" style="background:#1F4E79">3</div><div class="help-step-txt">Dien in</div></div></div><div class="help-section" id="help-beheer"><h3 style="color:#1F4E79">&#9881; Directeur &amp; Secretariaat</h3><h4>Directeur</h4><p>Tab <strong>Te beoordelen</strong> → details bekijken → goed- of afkeuren.</p><h4>Secretariaat</h4><p>Tab <strong>Maandoverzicht</strong> toont alle goedgekeurde aanvragen exporteerbaar voor boekhouding.</p></div></div>
   <div class="help-footer">Scholengroep Londerzeel BaO — ict@centrumschool.londerzeel.be</div>
 </div>
-
 </body>
 </html>
