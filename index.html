@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Onkosten — Kapelle op den Bos</title>
+<title>Onkosten — Londerzeel</title>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
@@ -337,8 +337,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- LOADING -->
 <div id="viewLoading" class="splash">
   <div class="splash-logo"><i class="ti ti-receipt"></i></div>
-  <h1>Onkosten — Kapelle op den Bos</h1>
-  <p>Scholengemeenschap Lonka</p>
+  <h1>Onkosten — Londerzeel</h1>
+  <p>Scholengroep Londerzeel BaO</p>
   <div class="spin"></div>
 </div>
 
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- LOGIN -->
 <div id="viewLogin" style="display:none" class="splash">
   <div class="splash-logo"><i class="ti ti-receipt"></i></div>
-  <h1>Onkosten — Kapelle op den Bos</h1>
+  <h1>Onkosten — Londerzeel</h1>
   <p>Meld aan met uw Microsoft 365-account om verder te gaan.</p>
   <button class="btn p" onclick="login()"><i class="ti ti-brand-microsoft"></i>Aanmelden</button>
 </div>
@@ -364,8 +364,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="topbar-l">
       <i class="ti ti-receipt" style="font-size:22px"></i>
       <div>
-        <h1>Onkosten — Kapelle op den Bos</h1>
-        <p>Scholengemeenschap Lonka</p>
+        <h1>Onkosten — Londerzeel</h1>
+        <p>Scholengroep Londerzeel BaO</p>
       </div>
     </div>
     <div class="topbar-r">
@@ -408,7 +408,7 @@ const CONFIG = {
     gebruikers: '02988043-9345-4865-bcbb-9067a63463ac',
   },
   redirectUri:  'https://lon-ka.github.io/KA-Onkosten/',
-  campus:       'Kapelle op den Bos',
+  campus:       'Londerzeel',
   tariefFiets:  0.35,
   tariefAuto:   0.43,
   tariefCarpool:0.24,
@@ -1723,7 +1723,7 @@ async function downloadOverviewPdf(){
     list.forEach(a=>{rows+=`<tr><td style="padding:7px 8px;border-bottom:1px solid #EEE">${a.Title||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;color:#888">${a.Stamboek||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · Dir: ${a.DirNaam||'—'}</td><td style="text-align:right;padding:7px 8px;border-bottom:1px solid #EEE;font-weight:600">${fmtEur(a.TotalEur)}</td></tr>`;});
   });
   const htmlStr=`<div style="font-family:Arial,sans-serif;font-size:13px;color:#1A1A18;max-width:700px;padding:10px">
-    <div style="background:#B85000;color:white;border-radius:8px;padding:16px 20px;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Maandoverzicht onkosten — ${CONFIG.campus}</div><div style="font-size:12px;opacity:.8;margin-top:3px">Scholengemeenschap Lonka | Aangemaakt op ${new Date().toLocaleDateString('nl-BE')}</div></div>
+    <div style="background:#B85000;color:white;border-radius:8px;padding:16px 20px;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Maandoverzicht onkosten — ${CONFIG.campus}</div><div style="font-size:12px;opacity:.8;margin-top:3px">Scholengroep Londerzeel BaO | Aangemaakt op ${new Date().toLocaleDateString('nl-BE')}</div></div>
     <table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F5F5F0"><th style="text-align:left;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Naam</th><th style="text-align:left;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Stamboeknr.</th><th style="text-align:left;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Details</th><th style="text-align:right;padding:8px;border-bottom:2px solid #DDD;font-size:11px;color:#888;text-transform:uppercase">Bedrag</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="background:#FEF3E8;font-weight:700"><td colspan="3" style="padding:10px 8px;border-top:2px solid #DDD;color:#7A3200">TOTAAL TE BETALEN</td><td style="text-align:right;padding:10px 8px;border-top:2px solid #DDD;color:#B85000;font-size:16px">${fmtEur(grandTotal)}</td></tr></tfoot></table>
   </div>`;
   const mn=S.fMaand?S.fMaand.replace('-','_'):'alles';
@@ -2043,7 +2043,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();
 <!-- HELP DRAWER -->
 <div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
 <div class="help-drawer" id="helpDrawer">
-  <div class="help-hdr" style="background:#1A6B4A">
+  <div class="help-hdr" style="background:#1F4E79">
     <h2>&#9432; Help &mdash; Onkostennota's</h2>
     <button class="help-close" onclick="closeHelp()">&#x2715;</button>
   </div>
@@ -2089,7 +2089,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();
     <div class="help-step"><div class="help-step-nr">3</div><div class="help-step-txt">Keur goed of af</div></div>
     <h4>Secretariaat — maandoverzicht</h4>
     <p>Het tabblad <strong>Maandoverzicht</strong> toont alle goedgekeurde aanvragen per maand, gegroepeerd per type, exporteerbaar voor de boekhouding.</p></div></div>
-  <div class="help-footer">Scholengroep Kapelle-op-den-Bos BaO — ict@gebaska.be</div>
+  <div class="help-footer">Scholengroep Londerzeel BaO — ict@centrumschool.londerzeel.be</div>
 </div>
 
 </body>
