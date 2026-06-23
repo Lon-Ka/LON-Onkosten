@@ -256,7 +256,7 @@ body.in-portal #helpBtn { display: none !important; }
 </style>
 
 <script>
-// Verplicht gebruik via MijnDigiKAntoor portaal
+// Verplicht gebruik via MijnDigiLoket portaal
 if (window.self === window.top) {
     document.addEventListener('DOMContentLoaded', function() {
         document.body.innerHTML = `
@@ -274,14 +274,14 @@ if (window.self === window.top) {
                     Toegang via portaal vereist
                 </h2>
                 <p style="margin:0 0 28px; color:#6B7A8D; max-width:360px; line-height:1.5;">
-                    Deze applicatie is enkel beschikbaar via het MijnDigiKAntoor portaal.
+                    Deze applicatie is enkel beschikbaar via het MijnDigiLoket portaal.
                 </p>
-                <a href="https://lon-ka.github.io/KA-portaal/"
+                <a href="https://lon-ka.github.io/LON-portaal/"
                    style="display:inline-flex; align-items:center; gap:10px;
                           padding:14px 28px; background:#0F1D2E; color:#fff;
                           text-decoration:none; border-radius:10px; font-weight:600;
                           font-size:.95rem;">
-                    Naar MijnDigiKAntoor
+                    Naar MijnDigiLoket
                 </a>
             </div>`;
     });
@@ -302,12 +302,12 @@ if (window.self === window.top) {
         </svg>
         <h2 style="margin:0 0 8px;font-size:1.4rem;color:#1C2B3A;">Toegang via portaal vereist</h2>
         <p style="margin:0 0 28px;color:#6B7A8D;max-width:360px;line-height:1.5;">
-          Deze applicatie is enkel beschikbaar via het MijnDigiKAntoor portaal.
+          Deze applicatie is enkel beschikbaar via het MijnDigiLoket portaal.
         </p>
-        <a href="https://lon-ka.github.io/KA-portaal/"
+        <a href="https://lon-ka.github.io/LON-portaal/"
            style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;
                   background:#0F1D2E;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">
-          Naar MijnDigiKAntoor
+          Naar MijnDigiLoket
         </a>
       </div>`;
   });
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
 const CONFIG = {
   clientId:    '481e8cb4-58ca-49b1-bb8b-5b02cbb45b4c',
   tenantId:    '655d15e1-e5fc-4868-8462-8463dc0ff014',
-  siteId:      'londerwijs.sharepoint.com,2463b644-ba24-4563-a37f-a67f26941a09,4d5ecb10-38f0-422f-b892-af256a5da6fc',
+  siteId:      'londerwijs.sharepoint.com:/sites/BaO-Onkosten',
   lijstIds: {
     profielen:  'f7a483ee-7206-4e07-aea1-e329d4b37a1b',
     aanvragen:  'cfabfe69-5926-496d-9b2f-adc283e99e21',
@@ -489,6 +489,7 @@ async function graph(method,path,body=null){
   const token=await getToken();
   if(!token)throw new Error('Geen token');
   const base=`https://graph.microsoft.com/v1.0/sites/${CONFIG.siteId}`;
+  const _spPath = CONFIG.siteId.includes(':/') ? ':/lists/' : '/lists/';
   const r=await fetch(base+path,{
     method,
     headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
@@ -504,14 +505,15 @@ async function graphPost(path,body){return graph('POST',path,body);}
 async function graphPatch(path,body){return graph('PATCH',path,body);}
 
 async function getListItems(listId,filter='',select=''){
-  let url=`/lists/${listId}/items?expand=fields&$top=999&$orderby=id`;
+  const _sp = CONFIG.siteId.includes(':/') ? ':/lists/' : '/lists/';
+  let url=`${_sp}${listId}/items?expand=fields&$top=999&$orderby=id`;
   if(filter)url+=`&$filter=${encodeURIComponent(filter)}`;
   if(select)url+=`&$select=${select}`;
   const r=await graphGet(url);
   return (r.value||[]).map(i=>({id:i.id,...i.fields}));
 }
-async function createItem(listId,fields){return graphPost(`/lists/${listId}/items`,{fields});}
-async function updateItem(listId,itemId,fields){return graphPatch(`/lists/${listId}/items/${itemId}/fields`,fields);}
+async function createItem(listId,fields){const _sp=CONFIG.siteId.includes(':/')? ':/lists/':'/lists/';return graphPost(`${_sp}${listId}/items`,{fields});}
+async function updateItem(listId,itemId,fields){const _sp=CONFIG.siteId.includes(':/')? ':/lists/':'/lists/';return graphPatch(`${_sp}${listId}/items/${itemId}/fields`,fields);}
 
 // ═══════════════════════════════════════════════════════════════════
 // BOOT
@@ -630,7 +632,7 @@ async function boot(){
     const accounts=msalApp.getAllAccounts();
     if(!accounts.length){
       if(window.self !== window.top){
-        showError('Geen actieve sessie gevonden. Meld aan via het MijnDigiKAntoor portaal en open de app opnieuw.');
+        showError('Geen actieve sessie gevonden. Meld aan via het MijnDigiLoket portaal en open de app opnieuw.');
         return;
       }
       showView('login');
@@ -2048,8 +2050,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();
   <div class="help-nav"><button class="help-tab  active" onclick="showHelpTab('algemeen',this)">Algemeen</button><button class="help-tab" onclick="showHelpTab('fiets',this)">Fiets</button><button class="help-tab" onclick="showHelpTab('ov',this)">Openbaar vervoer</button><button class="help-tab" onclick="showHelpTab('auto',this)">Eigen wagen</button><button class="help-tab" onclick="showHelpTab('beheer',this)">Beheer</button></div>
   <div class="help-body"><div class="help-section  active" id="help-algemeen">
     <h3>&#8505; Over deze applicatie</h3>
-    <p>Met <strong>Onkostennota's</strong> dien je vergoedingsaanvragen in voor verplaatsingen naar en tussen scholen. Je meldt je aan via het <strong>MijnDigiKAntoor</strong> portaal — een apart wachtwoord is niet nodig.</p>
-    <div class="help-tip"><strong>Toegang:</strong> enkel via MijnDigiKAntoor. Afmelden doe je via het portaal.</div>
+    <p>Met <strong>Onkostennota's</strong> dien je vergoedingsaanvragen in voor verplaatsingen naar en tussen scholen. Je meldt je aan via het <strong>MijnDigiLoket</strong> portaal — een apart wachtwoord is niet nodig.</p>
+    <div class="help-tip"><strong>Toegang:</strong> enkel via MijnDigiLoket. Afmelden doe je via het portaal.</div>
     <h4>Rollen</h4>
     <ul>
       <li><strong>Personeelslid:</strong> aanvragen indienen en eigen aanvragen bekijken</li>
