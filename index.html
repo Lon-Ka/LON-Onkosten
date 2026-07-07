@@ -1632,6 +1632,30 @@ async function markVerwerkt(id){
   }catch(e){warnMsg('Bijwerken mislukt: '+e.message);}
 }
 
+// Telt gefietste dagen en afgelegde afstand (km) op uit de opgeslagen trajectdata
+function fietsStats(a){
+  if(a.AanvraagType!=='fiets')return null;
+  try{
+    const d=JSON.parse(a.DataJson||'{}');
+    if(!d.traject||!d.traject.length)return null;
+    let dagen=0,km=0;
+    d.traject.forEach(t=>{dagen+=t.days.length;km+=t.days.length*parseFloat(t.km);});
+    return{dagen,km};
+  }catch(e){return null;}
+}
+
+// Telt ritten, totale km en carpoolritten op voor Eigen voertuig-aanvragen
+function autoStats(a){
+  if(a.AanvraagType!=='auto')return null;
+  try{
+    const d=JSON.parse(a.DataJson||'{}');
+    if(!d.ritten||!d.ritten.length)return null;
+    const km=d.ritten.reduce((s,r)=>s+(parseFloat(r.km)||0),0);
+    const cpCount=d.ritten.filter(r=>r.carpool).length;
+    return{ritten:d.ritten.length,km,cpCount};
+  }catch(e){return null;}
+}
+
 function renderSecOverzicht(){
   const filtered=S.aanvragen.filter(a=>{
     if(a.AanvraagStatus==='ingediend')return false;
@@ -1650,7 +1674,13 @@ function renderSecOverzicht(){
     if(!list.length)return[];
     const typeTotal=list.reduce((s,a)=>s+(a.TotalEur||0),0);grandTotal+=typeTotal;
     return[`<tr class="type-hdr"><td colspan="3">${{fiets:'🚲',ov:'🚌',auto:'🚗'}[type]} ${TYPE_LBL[type]}</td><td class="r">${fmtEur(typeTotal)}</td></tr>`,
-      ...list.sort((a,b)=>(a.Title||'').localeCompare(b.Title||'')).map(a=>`<tr><td>${a.Title||'—'}</td><td>${a.Stamboek||'—'}</td><td style="font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · ${a.School||'—'}<br><span style="font-size:11px">Dir: ${a.DirNaam||'—'}</span></td><td class="r" style="font-weight:600;color:var(--a3)">${fmtEur(a.TotalEur)}</td></tr>`)
+      ...list.sort((a,b)=>(a.Title||'').localeCompare(b.Title||'')).map(a=>{
+        const fs=fietsStats(a);
+        const fietsLine=fs?`<br><span style="font-size:11px;color:#555">${fs.dagen} fietsdag${fs.dagen!==1?'en':''} · ${fs.km.toFixed(1)} km</span>`:'';
+        const as=autoStats(a);
+        const autoLine=as?`<br><span style="font-size:11px;color:#555">${as.ritten} rit${as.ritten!==1?'ten':''} · ${as.km.toFixed(1)} km${as.cpCount?` · 🤝 carpool: ${as.cpCount}/${as.ritten}`:' · geen carpool'}</span>`:'';
+        return`<tr><td>${a.Title||'—'}</td><td>${a.Stamboek||'—'}</td><td style="font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · ${a.School||'—'}<br><span style="font-size:11px">Dir: ${a.DirNaam||'—'}</span><br><span style="font-size:11px;color:#555">IBAN: ${a.IBAN||'—'}</span>${fietsLine}${autoLine}</td><td class="r" style="font-weight:600;color:var(--a3)">${fmtEur(a.TotalEur)}</td></tr>`;
+      })
     ];
   });
 
@@ -1720,7 +1750,13 @@ async function downloadOverviewPdf(){
     if(!list.length)return;
     const tt=list.reduce((s,a)=>s+(a.TotalEur||0),0);
     rows+=`<tr style="background:#FEF3E8;font-weight:700"><td colspan="3" style="padding:8px;border-bottom:1px solid #DDD">${{fiets:'🚲',ov:'🚌',auto:'🚗'}[type]} ${TYPE_LBL[type]}</td><td style="text-align:right;padding:8px;border-bottom:1px solid #DDD">${fmtEur(tt)}</td></tr>`;
-    list.forEach(a=>{rows+=`<tr><td style="padding:7px 8px;border-bottom:1px solid #EEE">${a.Title||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;color:#888">${a.Stamboek||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · Dir: ${a.DirNaam||'—'}</td><td style="text-align:right;padding:7px 8px;border-bottom:1px solid #EEE;font-weight:600">${fmtEur(a.TotalEur)}</td></tr>`;});
+    list.forEach(a=>{
+      const fs=fietsStats(a);
+      const fietsLine=fs?` · ${fs.dagen} fietsdag${fs.dagen!==1?'en':''} · ${fs.km.toFixed(1)} km`:'';
+      const as=autoStats(a);
+      const autoLine=as?` · ${as.ritten} rit${as.ritten!==1?'ten':''} · ${as.km.toFixed(1)} km${as.cpCount?` · carpool: ${as.cpCount}/${as.ritten}`:' · geen carpool'}`:'';
+      rows+=`<tr><td style="padding:7px 8px;border-bottom:1px solid #EEE">${a.Title||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;color:#888">${a.Stamboek||'—'}</td><td style="padding:7px 8px;border-bottom:1px solid #EEE;font-size:12px;color:#888">${MND[(a.Maand-1)||0]} ${a.Jaar||''} · Dir: ${a.DirNaam||'—'} · IBAN: ${a.IBAN||'—'}${fietsLine}${autoLine}</td><td style="text-align:right;padding:7px 8px;border-bottom:1px solid #EEE;font-weight:600">${fmtEur(a.TotalEur)}</td></tr>`;
+    });
   });
   const htmlStr=`<div style="font-family:Arial,sans-serif;font-size:13px;color:#1A1A18;max-width:700px;padding:10px">
     <div style="background:#B85000;color:white;border-radius:8px;padding:16px 20px;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Maandoverzicht onkosten — ${CONFIG.campus}</div><div style="font-size:12px;opacity:.8;margin-top:3px">Scholengroep Londerzeel BaO | Aangemaakt op ${new Date().toLocaleDateString('nl-BE')}</div></div>
