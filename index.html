@@ -1092,10 +1092,18 @@ function renderOvInvoer(){
       <button class="add-btn" onclick="addOvRow('ov')"><i class="ti ti-plus"></i>Rij toevoegen</button>
     </div>
     <div class="br">
-      <button class="btn" onclick="renderOvFormulier(0)"><i class="ti ti-arrow-left"></i>Terug</button>
-      <button class="btn p" onclick="renderOvFormulier(2)"><i class="ti ti-arrow-right"></i>Overzicht</button>
+      <button class="btn" onclick="saveOvDraft();renderOvFormulier(0)"><i class="ti ti-arrow-left"></i>Terug</button>
+      <button class="btn p" onclick="naarOvOverzicht()"><i class="ti ti-arrow-right"></i>Overzicht</button>
     </div>`;
-  addOvRow('park');addOvRow('ov');
+  const d=S.ovDraft;
+  if(d){
+    const ms=document.getElementById('o_maand'), js=document.getElementById('o_jaar');
+    if(ms)ms.value=String(d.m);
+    if(js){ if(![...js.options].some(o=>o.value==String(d.y))) js.insertAdjacentHTML('afterbegin',`<option value="${d.y}">${d.y}</option>`); js.value=String(d.y); }
+  }
+  (d&&d.park.length?d.park:[null]).forEach(r=>addOvRow('park',r));
+  (d&&d.ov.length?d.ov:[null]).forEach(r=>addOvRow('ov',r));
+  updateOvTotals();
   // Voeg bewijszone toe
   const bzContainer = document.querySelector('#modContent .card');
   if(bzContainer){
@@ -1106,19 +1114,50 @@ function renderOvInvoer(){
     if(lastChild) lastChild.after(bz);
     else bzContainer.appendChild(bz);
   }
+  renderPendingBewijzen('ov-pending'); // eerder toegevoegde bewijsstukken opnieuw tonen
 }
 
-function addOvRow(type){
+function addOvRow(type,v){
   const tbody=document.getElementById(type==='park'?'parkBody':'ovBody');if(!tbody)return;
   const tr=document.createElement('tr');
   if(type==='park'){tr.innerHTML=`<td><input type="date" oninput="updateOvTotals()"></td><td><input type="text" placeholder="Reden" style="width:100%"></td><td><input type="number" step="0.01" min="0" placeholder="0,00" oninput="updateOvTotals()" style="width:80px"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateOvTotals()"><i class="ti ti-x"></i></button></td>`;}
   else{tr.innerHTML=`<td><input type="date" oninput="updateOvTotals()"></td><td><input type="text" placeholder="Reden" style="width:100%"></td><td><input type="text" placeholder="Bestemming" style="width:100%"></td><td><input type="number" step="0.01" min="0" placeholder="0,00" oninput="updateOvTotals()" style="width:80px"></td><td><button class="del-btn" onclick="this.closest('tr').remove();updateOvTotals()"><i class="ti ti-x"></i></button></td>`;}
+  if(v){
+    const ins=tr.querySelectorAll('input');
+    const vals=type==='park'?[v.datum,v.reden,v.kost]:[v.datum,v.reden,v.bestemming,v.kost];
+    vals.forEach((x,i)=>{ if(ins[i]&&x!=null&&x!=='') ins[i].value=x; });
+  }
   tbody.appendChild(tr);
 }
 
+// De invoer staat in tabellen op het scherm. Bewaar ze in S.ovDraft, zodat ze niet verloren gaan
+// wanneer het overzicht opnieuw getekend wordt (bv. bij het aanvinken van de verklaring).
+function saveOvDraft(){
+  if(!document.getElementById('parkBody'))return S.ovDraft;
+  const{park,ov}=readOvDom();
+  const m=parseInt(document.getElementById('o_maand')?.value);
+  const y=parseInt(document.getElementById('o_jaar')?.value);
+  S.ovDraft={park,ov,m:isNaN(m)?new Date().getMonth():m,y:isNaN(y)?new Date().getFullYear():y};
+  return S.ovDraft;
+}
+
+function naarOvOverzicht(){
+  const d=saveOvDraft();
+  if(!d||(!d.park.length&&!d.ov.length)){warnMsg('Vul minstens één parkeer- of OV-kost in.');return;}
+  const zonderBedrag=[...d.park,...d.ov].filter(r=>!(r.kost>0));
+  if(zonderBedrag.length){warnMsg('Vul bij elke regel een kostprijs in (of verwijder de lege regel).');return;}
+  S.oAccepted=false;S.oAcceptedDate='';
+  renderOvFormulier(2);
+}
+
 function getOvData(){
-  const park=[...document.getElementById('parkBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,kost:parseFloat(r.cells[2]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
-  const ov=[...document.getElementById('ovBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r._getChipVal?r._getChipVal():'',kost:parseFloat(r.cells[3]?.querySelector('input')?.value)||0})).filter(r=>r.kost>0||r.reden);
+  if(!document.getElementById('parkBody'))return S.ovDraft?{park:S.ovDraft.park,ov:S.ovDraft.ov}:{park:[],ov:[]};
+  return readOvDom();
+}
+
+function readOvDom(){
+  const park=[...document.getElementById('parkBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,kost:parseFloat(String(r.cells[2]?.querySelector('input')?.value||'').replace(',','.'))||0})).filter(r=>r.kost>0||r.reden);
+  const ov=[...document.getElementById('ovBody')?.rows||[]].map(r=>({datum:r.cells[0]?.querySelector('input')?.value,reden:r.cells[1]?.querySelector('input')?.value,bestemming:r._getChipVal?r._getChipVal():(r.cells[2]?.querySelector('input')?.value||''),kost:parseFloat(String(r.cells[3]?.querySelector('input')?.value||'').replace(',','.'))||0})).filter(r=>r.kost>0||r.reden);
   return{park,ov};
 }
 
@@ -1132,8 +1171,9 @@ function renderOvOverzicht(){
   const{park,ov}=getOvData();
   const pt=park.reduce((s,r)=>s+r.kost,0),ot=ov.reduce((s,r)=>s+r.kost,0),tot=pt+ot;
   const f=S.fForm||{};const nm=((f.fn||'')+' '+(f.ln||'')).trim();
-  const m=parseInt(document.getElementById('o_maand')?.value)||new Date().getMonth();
-  const y=parseInt(document.getElementById('o_jaar')?.value)||new Date().getFullYear();
+  const d=S.ovDraft||{};
+  const m=Number.isInteger(d.m)?d.m:new Date().getMonth();
+  const y=d.y||new Date().getFullYear();
   S.ovCurrent={park,ov,m,y,nm,tot};
   const steps=['Gegevens','Invoer','Overzicht'];
   const stepsHtml=steps.map((s,i)=>`<div class="step-t${i<2?' done':' active'}"><b>${i+1}</b>${s}</div>`).join('');
@@ -1173,6 +1213,7 @@ function renderOvOverzicht(){
 
 async function indienOv(){
   if(!S.oAccepted){warnMsg('Aanvaard eerst de verklaring.');return;}
+  if(!S.ovCurrent||!(S.ovCurrent.tot>0)){warnMsg('Er zijn geen bedragen om in te dienen. Ga terug en vul je kosten in.');return;}
   const{park,ov,m,y,nm,tot}=S.ovCurrent;
   const f=S.fForm||{};
   const dataJson=JSON.stringify({park,ov,totalPark:park.reduce((s,r)=>s+r.kost,0),totalOv:ov.reduce((s,r)=>s+r.kost,0),aanvaard:S.oAcceptedDate});
@@ -1206,9 +1247,12 @@ async function indienOv(){
       uploadAangiftePDF(html_ov,fn_ov,aangifte_subfolder('OV-Parkeer',ov_y||new Date().getFullYear(),ov_m||0))
         .then(url=>{ if(url) console.info('Aangifte OV opgeslagen:',url); });
     }
-    S.oAccepted=false;S.oAcceptedDate='';
+    S.oAccepted=false;S.oAcceptedDate='';S.ovDraft=null;S.ovCurrent=null;pendingBewijzen['ov-pending']=[];
     renderLkFormulier();
-  }catch(e){warnMsg('Indienen mislukt: '+e.message);}
+  }catch(e){
+    warnMsg('Indienen mislukt: '+e.message);
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i>Indienen';}
+  }
 }
 
 // ── AUTO ──
